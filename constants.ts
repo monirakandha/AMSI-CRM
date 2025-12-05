@@ -1,4 +1,5 @@
-import { Customer, SystemStatus, Ticket, TicketPriority, TicketStatus, Product, Invoice, InvoiceStatus, Quote, QuoteStatus, Staff, Role, Lead, LeadStatus } from "./types";
+
+import { Customer, SystemStatus, Ticket, TicketPriority, TicketStatus, Product, Invoice, InvoiceStatus, Quote, QuoteStatus, Staff, Role, Lead, LeadStatus, Subscription, SubscriptionStatus, BillingCycle } from "./types";
 
 export const MOCK_CUSTOMERS: Customer[] = [
   {
@@ -60,13 +61,50 @@ export const MOCK_CUSTOMERS: Customer[] = [
   }
 ];
 
+export const MOCK_SUBSCRIPTIONS: Subscription[] = [
+    {
+        id: "SUB-1001",
+        customerId: "CUST-001",
+        planName: "Commercial Gold Monitoring",
+        amount: 250.00,
+        billingCycle: BillingCycle.MONTHLY,
+        startDate: "2021-06-01",
+        nextBillingDate: "2024-06-01",
+        status: SubscriptionStatus.ACTIVE,
+        lastPaymentStatus: 'Success'
+    },
+    {
+        id: "SUB-1002",
+        customerId: "CUST-002",
+        planName: "Residential Basic",
+        amount: 45.00,
+        billingCycle: BillingCycle.MONTHLY,
+        startDate: "2022-09-01",
+        nextBillingDate: "2024-06-01",
+        status: SubscriptionStatus.PAST_DUE,
+        lastPaymentStatus: 'Failed'
+    },
+    {
+        id: "SUB-1003",
+        customerId: "CUST-003",
+        planName: "Commercial Silver",
+        amount: 150.00,
+        billingCycle: BillingCycle.MONTHLY,
+        startDate: "2023-03-01",
+        nextBillingDate: "2024-06-01",
+        status: SubscriptionStatus.ACTIVE,
+        lastPaymentStatus: 'Success'
+    }
+];
+
 export const MOCK_STAFF: Staff[] = [
     { id: "ST-001", name: "John Salesman", role: Role.SALES, email: "john@securelogic.com", phone: "555-001-0001", activeLeads: 5 },
     { id: "ST-002", name: "Jane Closer", role: Role.SALES, email: "jane@securelogic.com", phone: "555-001-0002", activeLeads: 8 },
     { id: "ENG-001", name: "Robert Engineer", role: Role.ENGINEER, email: "rob@securelogic.com", phone: "555-002-0001" },
     { id: "ENG-002", name: "Emily Tech", role: Role.ENGINEER, email: "emily@securelogic.com", phone: "555-002-0002" },
     { id: "TECH-001", name: "Mike Repairman", role: Role.TECH, email: "mike@securelogic.com", phone: "555-003-0001" },
-    { id: "TECH-002", name: "Sarah Installer", role: Role.TECH, email: "sarah.i@securelogic.com", phone: "555-003-0002" }
+    { id: "TECH-002", name: "Sarah Installer", role: Role.TECH, email: "sarah.i@securelogic.com", phone: "555-003-0002" },
+    { id: "ADMIN-001", name: "Sarah Admin", role: Role.ADMIN, email: "admin@securelogic.com", phone: "555-000-0000" }
 ];
 
 export const MOCK_TICKETS: Ticket[] = [

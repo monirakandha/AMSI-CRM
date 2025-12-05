@@ -1,18 +1,26 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { 
   Save, Bell, Globe, Shield, Database, Mail, Building, 
   Download, RefreshCw, CheckCircle, AlertTriangle, Smartphone, 
-  CreditCard, Server, UserCheck, Lock
+  CreditCard, Server, UserCheck, Lock, Upload, Camera, X
 } from 'lucide-react';
 
-const Settings: React.FC = () => {
+interface SettingsProps {
+  companySettings: {
+    name: string;
+    logo: string;
+  };
+  setCompanySettings: React.Dispatch<React.SetStateAction<{ name: string; logo: string; }>>;
+}
+
+const Settings: React.FC<SettingsProps> = ({ companySettings, setCompanySettings }) => {
   const [activeTab, setActiveTab] = useState<'general' | 'notifications' | 'integrations' | 'security' | 'data'>('general');
   const [isSaving, setIsSaving] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // Mock State for Form Fields
+  // Mock State for other Form Fields
   const [formData, setFormData] = useState({
-    companyName: 'SecureLogic CRM',
     supportEmail: 'support@securelogic.com',
     supportPhone: '(555) 012-3456',
     address: '123 Security Blvd, Tech City',
@@ -42,6 +50,17 @@ const Settings: React.FC = () => {
 
   const handleChange = (field: string, value: any) => {
     setFormData(prev => ({ ...prev, [field]: value }));
+  };
+
+  const handleLogoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setCompanySettings(prev => ({ ...prev, logo: reader.result as string }));
+      };
+      reader.readAsDataURL(file);
+    }
   };
 
   const tabs = [
@@ -106,17 +125,59 @@ const Settings: React.FC = () => {
             {activeTab === 'general' && (
               <div className="space-y-8 animate-fade-in">
                 <div>
+                  <h3 className="text-lg font-bold text-slate-800 mb-4 pb-2 border-b border-slate-100">Branding</h3>
+                  <div className="flex flex-col md:flex-row gap-6 items-start">
+                      <div className="relative group">
+                          <div 
+                              className="w-32 h-32 bg-slate-50 border-2 border-dashed border-slate-300 rounded-lg flex items-center justify-center cursor-pointer overflow-hidden"
+                              onClick={() => fileInputRef.current?.click()}
+                          >
+                              {companySettings.logo ? (
+                                  <img src={companySettings.logo} alt="Company Logo" className="w-full h-full object-contain p-2" />
+                              ) : (
+                                  <div className="text-center text-slate-400">
+                                      <Upload size={24} className="mx-auto mb-1" />
+                                      <span className="text-xs">Upload Logo</span>
+                                  </div>
+                              )}
+                          </div>
+                          {companySettings.logo && (
+                              <button 
+                                  onClick={(e) => {
+                                      e.stopPropagation();
+                                      setCompanySettings(prev => ({...prev, logo: ''}));
+                                  }}
+                                  className="absolute -top-2 -right-2 bg-red-100 text-red-600 p-1 rounded-full hover:bg-red-200"
+                              >
+                                  <X size={14} />
+                              </button>
+                          )}
+                          <input 
+                              type="file" 
+                              ref={fileInputRef} 
+                              className="hidden" 
+                              accept="image/*"
+                              onChange={handleLogoUpload}
+                          />
+                      </div>
+                      <div className="flex-1 space-y-4">
+                          <div>
+                              <label className="block text-sm font-medium text-slate-700 mb-1">Company Name</label>
+                              <input 
+                                  type="text" 
+                                  value={companySettings.name}
+                                  onChange={(e) => setCompanySettings(prev => ({...prev, name: e.target.value}))}
+                                  className="w-full border border-slate-300 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-blue-500 outline-none" 
+                              />
+                              <p className="text-xs text-slate-500 mt-1">This name will appear on the dashboard and navigation.</p>
+                          </div>
+                      </div>
+                  </div>
+                </div>
+
+                <div>
                   <h3 className="text-lg font-bold text-slate-800 mb-4 pb-2 border-b border-slate-100">Company Profile</h3>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div>
-                      <label className="block text-sm font-medium text-slate-700 mb-1">Company Name</label>
-                      <input 
-                        type="text" 
-                        value={formData.companyName}
-                        onChange={(e) => handleChange('companyName', e.target.value)}
-                        className="w-full border border-slate-300 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-blue-500 outline-none" 
-                      />
-                    </div>
                     <div>
                       <label className="block text-sm font-medium text-slate-700 mb-1">Support Email</label>
                       <input 

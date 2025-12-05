@@ -12,9 +12,11 @@ import TeamDirectory from './components/TeamDirectory';
 import Settings from './components/Settings';
 import JobCalendar from './components/JobCalendar';
 import Login from './components/Login';
+import SubscriptionManager from './components/SubscriptionManager';
+import UserProfile from './components/UserProfile';
 
-import { MOCK_CUSTOMERS, MOCK_TICKETS, MOCK_PRODUCTS, MOCK_INVOICES, MOCK_QUOTES, MOCK_STAFF, MOCK_LEADS } from './constants';
-import { Customer, Ticket, Product, Invoice, Quote, Staff, Lead, Role } from './types';
+import { MOCK_CUSTOMERS, MOCK_TICKETS, MOCK_PRODUCTS, MOCK_INVOICES, MOCK_QUOTES, MOCK_STAFF, MOCK_LEADS, MOCK_SUBSCRIPTIONS } from './constants';
+import { Customer, Ticket, Product, Invoice, Quote, Staff, Lead, Role, Subscription } from './types';
 
 const App: React.FC = () => {
   const [currentUser, setCurrentUser] = useState<Staff | null>(null);
@@ -28,6 +30,13 @@ const App: React.FC = () => {
   const [quotes, setQuotes] = useState<Quote[]>(MOCK_QUOTES);
   const [staff, setStaff] = useState<Staff[]>(MOCK_STAFF);
   const [leads, setLeads] = useState<Lead[]>(MOCK_LEADS);
+  const [subscriptions, setSubscriptions] = useState<Subscription[]>(MOCK_SUBSCRIPTIONS);
+
+  // App Settings State
+  const [companySettings, setCompanySettings] = useState({
+    name: 'SecureLogic',
+    logo: '' // Base64 string for logo
+  });
 
   // Authentication Handler
   const handleLogin = (user: Staff) => {
@@ -50,6 +59,7 @@ const App: React.FC = () => {
   // Permission Logic
   const canAccess = (tab: string): boolean => {
     if (!currentUser) return false;
+    if (tab === 'profile') return true; // Everyone can access their profile
     if (currentUser.role === Role.ADMIN) return true;
 
     const permissions: Record<Role, string[]> = {
@@ -114,6 +124,8 @@ const App: React.FC = () => {
         );
       case 'invoices':
         return <InvoiceList invoices={invoices} customers={customers} products={products} setInvoices={setInvoices} />;
+      case 'subscriptions':
+        return <SubscriptionManager subscriptions={subscriptions} customers={customers} setSubscriptions={setSubscriptions} setInvoices={setInvoices} />;
       case 'sales':
         return <SalesTeam staff={staff} leads={leads} setLeads={setLeads} />;
       case 'engineers':
@@ -121,7 +133,9 @@ const App: React.FC = () => {
       case 'team':
         return <TeamDirectory staff={staff} setStaff={setStaff} />;
       case 'settings':
-        return <Settings />;
+        return <Settings companySettings={companySettings} setCompanySettings={setCompanySettings} />;
+      case 'profile':
+        return <UserProfile currentUser={currentUser!} setCurrentUser={setCurrentUser} />;
       default:
         return (
             <div className="flex items-center justify-center h-full text-slate-400">
@@ -146,6 +160,7 @@ const App: React.FC = () => {
         setActiveTab={setActiveTab} 
         currentUser={currentUser}
         onLogout={handleLogout}
+        companySettings={companySettings}
       />
       <main className="flex-1 overflow-auto">
         {renderContent()}

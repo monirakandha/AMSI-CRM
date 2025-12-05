@@ -1,5 +1,5 @@
 import React from 'react';
-import { LayoutDashboard, Users, AlertCircle, Settings, ShieldCheck, Package, FileText, FileBarChart, Briefcase, HardHat, UserCog, Calendar, LogOut } from 'lucide-react';
+import { LayoutDashboard, Users, AlertCircle, Settings, ShieldCheck, Package, FileText, FileBarChart, Briefcase, HardHat, UserCog, Calendar, LogOut, CreditCard } from 'lucide-react';
 import { Role, Staff } from '../types';
 
 interface NavigationProps {
@@ -7,9 +7,10 @@ interface NavigationProps {
   setActiveTab: (tab: string) => void;
   currentUser: Staff;
   onLogout: () => void;
+  companySettings: { name: string; logo: string; };
 }
 
-const Navigation: React.FC<NavigationProps> = ({ activeTab, setActiveTab, currentUser, onLogout }) => {
+const Navigation: React.FC<NavigationProps> = ({ activeTab, setActiveTab, currentUser, onLogout, companySettings }) => {
   
   // Define all nav items
   const allNavItems = [
@@ -17,6 +18,7 @@ const Navigation: React.FC<NavigationProps> = ({ activeTab, setActiveTab, curren
     { id: 'schedule', label: 'Schedule', icon: Calendar, roles: [Role.ADMIN, Role.TECH, Role.ENGINEER] },
     { id: 'customers', label: 'Customers', icon: Users, roles: [Role.ADMIN, Role.SALES, Role.ENGINEER] },
     { id: 'tickets', label: 'Service Tickets', icon: AlertCircle, roles: [Role.ADMIN, Role.TECH, Role.ENGINEER] },
+    { id: 'subscriptions', label: 'Subscriptions', icon: CreditCard, roles: [Role.ADMIN] },
     { id: 'inventory', label: 'Inventory', icon: Package, roles: [Role.ADMIN, Role.TECH, Role.ENGINEER] },
     { id: 'quotes', label: 'Quotes', icon: FileBarChart, roles: [Role.ADMIN, Role.SALES, Role.ENGINEER] },
     { id: 'invoices', label: 'Invoices', icon: FileText, roles: [Role.ADMIN] },
@@ -42,15 +44,23 @@ const Navigation: React.FC<NavigationProps> = ({ activeTab, setActiveTab, curren
   return (
     <div className="w-64 bg-slate-900 text-slate-100 flex flex-col h-full shadow-xl">
       <div className="p-6 flex items-center gap-3 border-b border-slate-800">
-        <ShieldCheck className="w-8 h-8 text-blue-500" />
+        {companySettings.logo ? (
+            <img src={companySettings.logo} alt="Logo" className="w-8 h-8 object-contain rounded" />
+        ) : (
+            <ShieldCheck className="w-8 h-8 text-blue-500" />
+        )}
         <div>
-          <h1 className="text-xl font-bold tracking-tight">SecureLogic</h1>
+          <h1 className="text-xl font-bold tracking-tight">{companySettings.name}</h1>
           <p className="text-xs text-slate-400">CRM & Dispatch</p>
         </div>
       </div>
       
       <div className="px-6 py-4">
-        <div className="flex items-center gap-3 p-3 bg-slate-800 rounded-lg border border-slate-700">
+        <div 
+            onClick={() => setActiveTab('profile')}
+            className={`flex items-center gap-3 p-3 bg-slate-800 rounded-lg border border-slate-700 cursor-pointer hover:bg-slate-750 hover:border-slate-600 transition-all ${activeTab === 'profile' ? 'ring-2 ring-blue-500 border-transparent' : ''}`}
+            title="View Profile"
+        >
             <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold text-white shadow-md ${getRoleBadgeColor(currentUser.role)}`}>
                 {currentUser.name.charAt(0)}
             </div>

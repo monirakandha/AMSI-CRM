@@ -155,6 +155,32 @@ export interface Quote {
   notes?: string;
 }
 
+// Subscriptions & Plans
+
+export enum SubscriptionStatus {
+    ACTIVE = 'Active',
+    PAST_DUE = 'Past Due',
+    CANCELLED = 'Cancelled'
+}
+
+export enum BillingCycle {
+    MONTHLY = 'Monthly',
+    QUARTERLY = 'Quarterly',
+    ANNUALLY = 'Annually'
+}
+
+export interface Subscription {
+    id: string;
+    customerId: string;
+    planName: string;
+    amount: number;
+    billingCycle: BillingCycle;
+    startDate: string;
+    nextBillingDate: string;
+    status: SubscriptionStatus;
+    lastPaymentStatus: 'Success' | 'Failed';
+}
+
 // Sales & Engineering
 
 export enum Role {
