@@ -81,7 +81,7 @@ const Settings: React.FC<SettingsProps> = ({ companySettings, setCompanySettings
         <button 
           onClick={handleSave}
           disabled={isSaving}
-          className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2.5 rounded-lg font-medium transition-all shadow-sm flex items-center gap-2 disabled:opacity-70"
+          className="bg-[#FFB600] hover:bg-amber-500 text-slate-900 px-6 py-2.5 rounded-lg font-bold transition-all shadow-sm flex items-center gap-2 disabled:opacity-70"
         >
           {isSaving ? <RefreshCw size={18} className="animate-spin" /> : <Save size={18} />}
           {isSaving ? 'Saving...' : 'Save Changes'}
@@ -106,11 +106,11 @@ const Settings: React.FC<SettingsProps> = ({ companySettings, setCompanySettings
                 onClick={() => setActiveTab(tab.id as any)}
                 className={`w-full flex items-center gap-3 px-5 py-4 text-sm font-medium transition-colors border-l-4 ${
                   isActive 
-                    ? 'border-blue-500 bg-blue-50 text-blue-700' 
+                    ? 'border-[#FFB600] bg-amber-50 text-slate-900' 
                     : 'border-transparent text-slate-600 hover:bg-slate-50 hover:text-slate-900'
                 }`}
               >
-                <Icon size={18} />
+                <Icon size={18} className={isActive ? "text-[#FFB600]" : "text-slate-400"} />
                 {tab.label}
               </button>
             );
@@ -167,7 +167,7 @@ const Settings: React.FC<SettingsProps> = ({ companySettings, setCompanySettings
                                   type="text" 
                                   value={companySettings.name}
                                   onChange={(e) => setCompanySettings(prev => ({...prev, name: e.target.value}))}
-                                  className="w-full border border-slate-300 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-blue-500 outline-none" 
+                                  className="w-full border border-slate-300 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-[#FFB600] focus:border-[#FFB600] outline-none" 
                               />
                               <p className="text-xs text-slate-500 mt-1">This name will appear on the dashboard and navigation.</p>
                           </div>
@@ -184,7 +184,7 @@ const Settings: React.FC<SettingsProps> = ({ companySettings, setCompanySettings
                         type="email" 
                         value={formData.supportEmail}
                         onChange={(e) => handleChange('supportEmail', e.target.value)}
-                        className="w-full border border-slate-300 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-blue-500 outline-none" 
+                        className="w-full border border-slate-300 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-[#FFB600] focus:border-[#FFB600] outline-none" 
                       />
                     </div>
                     <div>
@@ -193,7 +193,7 @@ const Settings: React.FC<SettingsProps> = ({ companySettings, setCompanySettings
                         type="text" 
                         value={formData.supportPhone}
                         onChange={(e) => handleChange('supportPhone', e.target.value)}
-                        className="w-full border border-slate-300 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-blue-500 outline-none" 
+                        className="w-full border border-slate-300 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-[#FFB600] focus:border-[#FFB600] outline-none" 
                       />
                     </div>
                     <div>
@@ -202,7 +202,7 @@ const Settings: React.FC<SettingsProps> = ({ companySettings, setCompanySettings
                         type="text" 
                         value={formData.address}
                         onChange={(e) => handleChange('address', e.target.value)}
-                        className="w-full border border-slate-300 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-blue-500 outline-none" 
+                        className="w-full border border-slate-300 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-[#FFB600] focus:border-[#FFB600] outline-none" 
                       />
                     </div>
                   </div>
@@ -216,7 +216,7 @@ const Settings: React.FC<SettingsProps> = ({ companySettings, setCompanySettings
                       <select 
                         value={formData.currency}
                         onChange={(e) => handleChange('currency', e.target.value)}
-                        className="w-full border border-slate-300 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-blue-500 outline-none bg-white"
+                        className="w-full border border-slate-300 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-[#FFB600] focus:border-[#FFB600] outline-none bg-white"
                       >
                         <option value="USD">USD ($)</option>
                         <option value="EUR">EUR (€)</option>
@@ -229,7 +229,7 @@ const Settings: React.FC<SettingsProps> = ({ companySettings, setCompanySettings
                       <select 
                         value={formData.timezone}
                         onChange={(e) => handleChange('timezone', e.target.value)}
-                        className="w-full border border-slate-300 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-blue-500 outline-none bg-white"
+                        className="w-full border border-slate-300 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-[#FFB600] focus:border-[#FFB600] outline-none bg-white"
                       >
                         <option value="America/New_York">Eastern Time (US & Canada)</option>
                         <option value="America/Los_Angeles">Pacific Time (US & Canada)</option>
@@ -242,7 +242,7 @@ const Settings: React.FC<SettingsProps> = ({ companySettings, setCompanySettings
                       <select 
                         value={formData.dateFormat}
                         onChange={(e) => handleChange('dateFormat', e.target.value)}
-                        className="w-full border border-slate-300 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-blue-500 outline-none bg-white"
+                        className="w-full border border-slate-300 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-[#FFB600] focus:border-[#FFB600] outline-none bg-white"
                       >
                         <option value="MM/DD/YYYY">MM/DD/YYYY</option>
                         <option value="DD/MM/YYYY">DD/MM/YYYY</option>
@@ -272,7 +272,7 @@ const Settings: React.FC<SettingsProps> = ({ companySettings, setCompanySettings
                       </div>
                       <label className="relative inline-flex items-center cursor-pointer">
                         <input type="checkbox" checked={formData.emailAlerts} onChange={(e) => handleChange('emailAlerts', e.target.checked)} className="sr-only peer" />
-                        <div className="w-11 h-6 bg-slate-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+                        <div className="w-11 h-6 bg-slate-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-[#FFB600] rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#FFB600]"></div>
                       </label>
                     </div>
 
@@ -288,7 +288,7 @@ const Settings: React.FC<SettingsProps> = ({ companySettings, setCompanySettings
                       </div>
                       <label className="relative inline-flex items-center cursor-pointer">
                         <input type="checkbox" checked={formData.smsDispatch} onChange={(e) => handleChange('smsDispatch', e.target.checked)} className="sr-only peer" />
-                        <div className="w-11 h-6 bg-slate-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+                        <div className="w-11 h-6 bg-slate-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-[#FFB600] rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#FFB600]"></div>
                       </label>
                     </div>
                   </div>
@@ -303,7 +303,7 @@ const Settings: React.FC<SettingsProps> = ({ companySettings, setCompanySettings
                         id="autoInvoice"
                         checked={formData.autoInvoiceReminders}
                         onChange={(e) => handleChange('autoInvoiceReminders', e.target.checked)}
-                        className="mt-1 w-4 h-4 text-blue-600 border-slate-300 rounded focus:ring-blue-500"
+                        className="mt-1 w-4 h-4 text-[#FFB600] border-slate-300 rounded focus:ring-[#FFB600]"
                       />
                       <label htmlFor="autoInvoice">
                         <span className="block font-medium text-slate-800">Invoice Payment Reminders</span>
@@ -316,7 +316,7 @@ const Settings: React.FC<SettingsProps> = ({ companySettings, setCompanySettings
                         id="maintenance"
                         checked={formData.maintenanceReminders}
                         onChange={(e) => handleChange('maintenanceReminders', e.target.checked)}
-                        className="mt-1 w-4 h-4 text-blue-600 border-slate-300 rounded focus:ring-blue-500"
+                        className="mt-1 w-4 h-4 text-[#FFB600] border-slate-300 rounded focus:ring-[#FFB600]"
                       />
                       <label htmlFor="maintenance">
                         <span className="block font-medium text-slate-800">Service & Maintenance Due</span>
@@ -340,7 +340,7 @@ const Settings: React.FC<SettingsProps> = ({ companySettings, setCompanySettings
                       <div className="flex justify-between items-start mb-4">
                         <div className="flex items-center gap-3">
                           <div className="p-2 bg-white border border-slate-200 rounded-lg shadow-sm">
-                            <Server size={24} className="text-blue-600" />
+                            <Server size={24} className="text-[#FFB600]" />
                           </div>
                           <div>
                             <h4 className="font-bold text-slate-800">Google Gemini AI</h4>
@@ -381,7 +381,7 @@ const Settings: React.FC<SettingsProps> = ({ companySettings, setCompanySettings
                             readOnly
                             className="flex-1 bg-white border border-slate-300 rounded px-3 py-2 text-sm text-slate-500 font-mono"
                           />
-                          <button className="text-blue-600 text-sm font-medium hover:underline">Update</button>
+                          <button className="text-[#FFB600] text-sm font-bold hover:underline">Update</button>
                         </div>
                       </div>
                     </div>
@@ -409,7 +409,7 @@ const Settings: React.FC<SettingsProps> = ({ companySettings, setCompanySettings
                       </div>
                       <label className="relative inline-flex items-center cursor-pointer">
                         <input type="checkbox" checked={formData.twoFactorAuth} onChange={(e) => handleChange('twoFactorAuth', e.target.checked)} className="sr-only peer" />
-                        <div className="w-11 h-6 bg-slate-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+                        <div className="w-11 h-6 bg-slate-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-[#FFB600] rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#FFB600]"></div>
                       </label>
                     </div>
 
@@ -424,7 +424,7 @@ const Settings: React.FC<SettingsProps> = ({ companySettings, setCompanySettings
                               type="number" 
                               value={formData.passwordExpiry}
                               onChange={(e) => handleChange('passwordExpiry', Number(e.target.value))}
-                              className="w-full border border-slate-300 rounded p-2 text-sm"
+                              className="w-full border border-slate-300 rounded p-2 text-sm focus:ring-[#FFB600]"
                             />
                          </div>
                          <div>
@@ -433,7 +433,7 @@ const Settings: React.FC<SettingsProps> = ({ companySettings, setCompanySettings
                               type="number" 
                               value={formData.sessionTimeout}
                               onChange={(e) => handleChange('sessionTimeout', Number(e.target.value))}
-                              className="w-full border border-slate-300 rounded p-2 text-sm"
+                              className="w-full border border-slate-300 rounded p-2 text-sm focus:ring-[#FFB600]"
                             />
                          </div>
                       </div>

@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Staff } from '../types';
 import { User, Mail, Phone, Briefcase, Save, Edit2, Shield, Camera } from 'lucide-react';
@@ -42,7 +41,7 @@ const UserProfile: React.FC<UserProfileProps> = ({ currentUser, setCurrentUser }
               </button>
               <button 
                 onClick={handleSave}
-                className="px-4 py-2 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition-colors shadow-sm flex items-center gap-2"
+                className="px-4 py-2 bg-[#FFB600] text-slate-900 font-bold rounded-lg hover:bg-amber-500 transition-colors shadow-sm flex items-center gap-2"
               >
                 <Save size={18} /> Save Changes
               </button>
@@ -58,7 +57,7 @@ const UserProfile: React.FC<UserProfileProps> = ({ currentUser, setCurrentUser }
         </div>
 
         <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
-          <div className="h-32 bg-gradient-to-r from-blue-600 to-indigo-600 relative">
+          <div className="h-32 bg-gradient-to-r from-[#FFB600] to-orange-500 relative">
             <div className="absolute -bottom-12 left-8">
               <div className="w-24 h-24 bg-white rounded-full p-1 shadow-lg">
                 <div className="w-full h-full bg-slate-100 rounded-full flex items-center justify-center text-slate-400 relative overflow-hidden group cursor-pointer">
@@ -96,7 +95,7 @@ const UserProfile: React.FC<UserProfileProps> = ({ currentUser, setCurrentUser }
                         type="text" 
                         value={formData.name}
                         onChange={(e) => setFormData({...formData, name: e.target.value})}
-                        className="w-full p-2.5 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 outline-none"
+                        className="w-full p-2.5 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-[#FFB600] focus:border-[#FFB600] outline-none"
                       />
                     ) : (
                       <div className="flex items-center gap-3 p-2.5 bg-slate-50 rounded-lg border border-slate-100 text-slate-700">
@@ -113,7 +112,7 @@ const UserProfile: React.FC<UserProfileProps> = ({ currentUser, setCurrentUser }
                         type="email" 
                         value={formData.email}
                         onChange={(e) => setFormData({...formData, email: e.target.value})}
-                        className="w-full p-2.5 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 outline-none"
+                        className="w-full p-2.5 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-[#FFB600] focus:border-[#FFB600] outline-none"
                       />
                     ) : (
                       <div className="flex items-center gap-3 p-2.5 bg-slate-50 rounded-lg border border-slate-100 text-slate-700">
@@ -130,7 +129,7 @@ const UserProfile: React.FC<UserProfileProps> = ({ currentUser, setCurrentUser }
                         type="tel" 
                         value={formData.phone}
                         onChange={(e) => setFormData({...formData, phone: e.target.value})}
-                        className="w-full p-2.5 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 outline-none"
+                        className="w-full p-2.5 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-[#FFB600] focus:border-[#FFB600] outline-none"
                       />
                     ) : (
                       <div className="flex items-center gap-3 p-2.5 bg-slate-50 rounded-lg border border-slate-100 text-slate-700">
@@ -163,7 +162,7 @@ const UserProfile: React.FC<UserProfileProps> = ({ currentUser, setCurrentUser }
                       <p className="text-xs text-slate-500">Your account is active and secure.</p>
                     </div>
                   </div>
-                  <button className="text-blue-600 text-sm font-medium hover:underline">
+                  <button className="text-[#FFB600] text-sm font-bold hover:underline">
                     Change Password
                   </button>
                 </div>

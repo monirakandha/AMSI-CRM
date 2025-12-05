@@ -171,7 +171,7 @@ const EngineerSection: React.FC<EngineerSectionProps> = ({ staff, leads, setLead
                                 </button>
                                 <button 
                                     onClick={() => handleReviewAction(lead.id, 'approve')}
-                                    className="px-6 py-2 bg-purple-600 text-white font-medium rounded-lg hover:bg-purple-700 transition-colors shadow-sm text-sm flex items-center gap-2"
+                                    className="px-6 py-2 bg-[#FFB600] text-slate-900 font-bold rounded-lg hover:bg-amber-500 transition-colors shadow-sm text-sm flex items-center gap-2"
                                 >
                                     <FileCheck size={16} /> Approve Quote
                                 </button>

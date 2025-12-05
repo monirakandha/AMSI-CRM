@@ -1,4 +1,3 @@
-
 import React, { useState, useRef, useEffect } from 'react';
 import { Product, StockHistoryEntry } from '../types';
 import { Search, Package, Plus, Filter, Tag, X, TrendingUp, History, DollarSign, Box, Star, Zap, ShieldCheck, Upload, Camera, RefreshCw, AlertCircle, Edit2, Save } from 'lucide-react';
@@ -177,7 +176,7 @@ const ProductInventory: React.FC<ProductInventoryProps> = ({ products, setProduc
         </div>
         <button 
             onClick={() => setIsAddModalOpen(true)}
-            className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium transition-colors shadow-sm shadow-blue-900/10 flex items-center gap-2"
+            className="bg-[#FFB600] hover:bg-amber-500 text-slate-900 px-4 py-2 rounded-lg font-medium transition-colors shadow-sm flex items-center gap-2"
         >
           <Plus size={18} /> Add Product
         </button>
@@ -193,7 +192,7 @@ const ProductInventory: React.FC<ProductInventoryProps> = ({ products, setProduc
               placeholder="Search products by name or SKU..." 
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-10 pr-4 py-2 rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white"
+              className="w-full pl-10 pr-4 py-2 rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-[#FFB600] focus:border-transparent bg-white"
             />
           </div>
           <div className="flex flex-wrap gap-2 items-center">
@@ -317,7 +316,7 @@ const ProductInventory: React.FC<ProductInventoryProps> = ({ products, setProduc
                   <td className="px-6 py-4 text-center">
                     <button 
                         onClick={(e) => { e.stopPropagation(); setSelectedProduct(product); }}
-                        className="text-slate-400 hover:text-blue-600 font-medium text-xs border border-slate-200 rounded px-2 py-1 hover:border-blue-300 transition-all"
+                        className="text-slate-400 hover:text-[#FFB600] font-medium text-xs border border-slate-200 rounded px-2 py-1 hover:border-[#FFB600] transition-all"
                     >
                         View
                     </button>
@@ -349,7 +348,7 @@ const ProductInventory: React.FC<ProductInventoryProps> = ({ products, setProduc
                 <div className="p-6 overflow-y-auto space-y-4">
                     <div className="flex gap-4">
                         <div 
-                            className="w-24 h-24 bg-slate-100 rounded-lg border-2 border-dashed border-slate-300 flex flex-col items-center justify-center text-slate-400 cursor-pointer hover:border-blue-400 hover:text-blue-500 transition-colors flex-shrink-0 overflow-hidden relative group"
+                            className="w-24 h-24 bg-slate-100 rounded-lg border-2 border-dashed border-slate-300 flex flex-col items-center justify-center text-slate-400 cursor-pointer hover:border-[#FFB600] hover:text-[#FFB600] transition-colors flex-shrink-0 overflow-hidden relative group"
                             onClick={() => fileInputRef.current?.click()}
                         >
                             {newProduct.image ? (
@@ -375,7 +374,7 @@ const ProductInventory: React.FC<ProductInventoryProps> = ({ products, setProduc
                             <label className="block text-sm font-medium text-slate-700 mb-1">Product Name *</label>
                             <input 
                                 type="text" 
-                                className="w-full border border-slate-300 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-blue-500 outline-none"
+                                className="w-full border border-slate-300 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-[#FFB600] focus:border-[#FFB600] outline-none"
                                 placeholder="e.g. 12V Battery"
                                 value={newProduct.name}
                                 onChange={(e) => setNewProduct({...newProduct, name: e.target.value})}
@@ -388,7 +387,7 @@ const ProductInventory: React.FC<ProductInventoryProps> = ({ products, setProduc
                             <label className="block text-sm font-medium text-slate-700 mb-1">Category</label>
                             <input 
                                 type="text" 
-                                className="w-full border border-slate-300 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-blue-500 outline-none"
+                                className="w-full border border-slate-300 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-[#FFB600] focus:border-[#FFB600] outline-none"
                                 placeholder="e.g. Sensors"
                                 value={newProduct.category}
                                 onChange={(e) => setNewProduct({...newProduct, category: e.target.value})}
@@ -398,7 +397,7 @@ const ProductInventory: React.FC<ProductInventoryProps> = ({ products, setProduc
                             <label className="block text-sm font-medium text-slate-700 mb-1">SKU *</label>
                             <input 
                                 type="text" 
-                                className="w-full border border-slate-300 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-blue-500 outline-none"
+                                className="w-full border border-slate-300 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-[#FFB600] focus:border-[#FFB600] outline-none"
                                 placeholder="e.g. SEN-001"
                                 value={newProduct.sku}
                                 onChange={(e) => setNewProduct({...newProduct, sku: e.target.value})}
@@ -411,7 +410,7 @@ const ProductInventory: React.FC<ProductInventoryProps> = ({ products, setProduc
                             <label className="block text-sm font-medium text-slate-700 mb-1">Price ($)</label>
                             <input 
                                 type="number" 
-                                className="w-full border border-slate-300 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-blue-500 outline-none"
+                                className="w-full border border-slate-300 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-[#FFB600] focus:border-[#FFB600] outline-none"
                                 value={newProduct.price}
                                 onChange={(e) => setNewProduct({...newProduct, price: Number(e.target.value)})}
                             />
@@ -420,7 +419,7 @@ const ProductInventory: React.FC<ProductInventoryProps> = ({ products, setProduc
                             <label className="block text-sm font-medium text-slate-700 mb-1">Cost ($)</label>
                             <input 
                                 type="number" 
-                                className="w-full border border-slate-300 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-blue-500 outline-none"
+                                className="w-full border border-slate-300 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-[#FFB600] focus:border-[#FFB600] outline-none"
                                 value={newProduct.cost}
                                 onChange={(e) => setNewProduct({...newProduct, cost: Number(e.target.value)})}
                             />
@@ -429,7 +428,7 @@ const ProductInventory: React.FC<ProductInventoryProps> = ({ products, setProduc
                             <label className="block text-sm font-medium text-slate-700 mb-1">Initial Stock</label>
                             <input 
                                 type="number" 
-                                className="w-full border border-slate-300 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-blue-500 outline-none"
+                                className="w-full border border-slate-300 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-[#FFB600] focus:border-[#FFB600] outline-none"
                                 value={newProduct.stock}
                                 onChange={(e) => setNewProduct({...newProduct, stock: Number(e.target.value)})}
                             />
@@ -440,7 +439,7 @@ const ProductInventory: React.FC<ProductInventoryProps> = ({ products, setProduc
                         <label className="block text-sm font-medium text-slate-700 mb-1">Warranty Info</label>
                          <input 
                             type="text" 
-                            className="w-full border border-slate-300 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-blue-500 outline-none"
+                            className="w-full border border-slate-300 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-[#FFB600] focus:border-[#FFB600] outline-none"
                             placeholder="e.g. 1 Year Manufacturer"
                             value={newProduct.warranty}
                             onChange={(e) => setNewProduct({...newProduct, warranty: e.target.value})}
@@ -450,7 +449,7 @@ const ProductInventory: React.FC<ProductInventoryProps> = ({ products, setProduc
                     <div>
                         <label className="block text-sm font-medium text-slate-700 mb-1">Description</label>
                         <textarea 
-                            className="w-full border border-slate-300 rounded-lg p-2.5 text-sm h-24 focus:ring-2 focus:ring-blue-500 outline-none resize-none"
+                            className="w-full border border-slate-300 rounded-lg p-2.5 text-sm h-24 focus:ring-2 focus:ring-[#FFB600] focus:border-[#FFB600] outline-none resize-none"
                             placeholder="Product details..."
                             value={newProduct.description}
                             onChange={(e) => setNewProduct({...newProduct, description: e.target.value})}
@@ -468,7 +467,7 @@ const ProductInventory: React.FC<ProductInventoryProps> = ({ products, setProduc
                     <button 
                         onClick={handleAddProduct}
                         disabled={!newProduct.name || !newProduct.sku}
-                        className="px-6 py-2 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition-colors shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
+                        className="px-6 py-2 bg-[#FFB600] text-slate-900 font-bold rounded-lg hover:bg-amber-500 transition-colors shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                         Add Product
                     </button>
@@ -495,7 +494,7 @@ const ProductInventory: React.FC<ProductInventoryProps> = ({ products, setProduc
                                 </button>
                                 <button 
                                     onClick={handleSaveChanges} 
-                                    className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-2 text-sm font-medium shadow-sm"
+                                    className="px-4 py-2 bg-[#FFB600] text-slate-900 rounded-lg hover:bg-amber-500 transition-colors flex items-center gap-2 text-sm font-bold shadow-sm"
                                 >
                                     <Save size={16} /> Save Changes
                                 </button>
@@ -555,7 +554,7 @@ const ProductInventory: React.FC<ProductInventoryProps> = ({ products, setProduc
                             {/* Inventory Management Card */}
                             <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
                                 <h4 className="text-sm font-bold text-slate-800 mb-4 flex items-center gap-2">
-                                    <RefreshCw size={16} className="text-blue-600" /> Stock Adjustment
+                                    <RefreshCw size={16} className="text-[#FFB600]" /> Stock Adjustment
                                 </h4>
                                 <div className="space-y-4">
                                     <div className="grid grid-cols-2 gap-3">
@@ -565,7 +564,7 @@ const ProductInventory: React.FC<ProductInventoryProps> = ({ products, setProduc
                                                 type="number" 
                                                 value={adjustAmount}
                                                 onChange={(e) => setAdjustAmount(Number(e.target.value))}
-                                                className="w-full border border-slate-300 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-blue-500 outline-none"
+                                                className="w-full border border-slate-300 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-[#FFB600] focus:border-[#FFB600] outline-none"
                                                 placeholder="0"
                                             />
                                         </div>
@@ -574,7 +573,7 @@ const ProductInventory: React.FC<ProductInventoryProps> = ({ products, setProduc
                                             <select 
                                                 value={adjustType}
                                                 onChange={(e) => setAdjustType(e.target.value as any)}
-                                                className="w-full border border-slate-300 rounded-lg p-2.5 text-sm bg-white focus:ring-2 focus:ring-blue-500 outline-none"
+                                                className="w-full border border-slate-300 rounded-lg p-2.5 text-sm bg-white focus:ring-2 focus:ring-[#FFB600] focus:border-[#FFB600] outline-none"
                                             >
                                                 <option value="Restock">Restock (+)</option>
                                                 <option value="Adjustment">Correction (+/-)</option>
@@ -590,7 +589,7 @@ const ProductInventory: React.FC<ProductInventoryProps> = ({ products, setProduc
                                             value={adjustNote}
                                             onChange={(e) => setAdjustNote(e.target.value)}
                                             placeholder="e.g. Monthly Inventory Count"
-                                            className="w-full border border-slate-300 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-blue-500 outline-none"
+                                            className="w-full border border-slate-300 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-[#FFB600] focus:border-[#FFB600] outline-none"
                                         />
                                     </div>
                                     <button 
@@ -617,7 +616,7 @@ const ProductInventory: React.FC<ProductInventoryProps> = ({ products, setProduc
                                                         <label className="text-xs text-slate-500 uppercase font-bold mb-1">Product Name</label>
                                                         <input 
                                                             type="text"
-                                                            className="text-xl font-bold text-slate-800 border border-slate-300 rounded p-2 focus:border-blue-500 outline-none w-full"
+                                                            className="text-xl font-bold text-slate-800 border border-slate-300 rounded p-2 focus:border-[#FFB600] outline-none w-full"
                                                             value={editForm.name}
                                                             onChange={(e) => setEditForm({...editForm, name: e.target.value})}
                                                         />
@@ -626,7 +625,7 @@ const ProductInventory: React.FC<ProductInventoryProps> = ({ products, setProduc
                                                         <label className="text-xs text-slate-500 uppercase font-bold mb-1">SKU</label>
                                                         <input 
                                                             type="text"
-                                                            className="text-xl font-bold text-slate-600 border border-slate-300 rounded p-2 focus:border-blue-500 outline-none w-full font-mono"
+                                                            className="text-xl font-bold text-slate-600 border border-slate-300 rounded p-2 focus:border-[#FFB600] outline-none w-full font-mono"
                                                             value={editForm.sku}
                                                             onChange={(e) => setEditForm({...editForm, sku: e.target.value})}
                                                         />
@@ -664,7 +663,7 @@ const ProductInventory: React.FC<ProductInventoryProps> = ({ products, setProduc
                                                 
                                                 <div className="flex flex-wrap gap-4 mt-3">
                                                     <div className="flex items-center gap-2 text-slate-600 bg-slate-50 px-3 py-1.5 rounded-full border border-slate-100">
-                                                        <Tag size={14} className="text-blue-500" /> 
+                                                        <Tag size={14} className="text-[#FFB600]" /> 
                                                         <span className="text-sm font-medium">{selectedProduct.category}</span>
                                                     </div>
                                                     {selectedProduct.warranty && (
@@ -735,7 +734,7 @@ const ProductInventory: React.FC<ProductInventoryProps> = ({ products, setProduc
                                     <h4 className="text-xs font-bold text-slate-400 uppercase mb-2">Description</h4>
                                     {isEditing ? (
                                         <textarea 
-                                            className="w-full border border-slate-300 rounded p-3 text-sm focus:ring-2 focus:ring-blue-500 outline-none h-32 resize-none"
+                                            className="w-full border border-slate-300 rounded p-3 text-sm focus:ring-2 focus:ring-[#FFB600] focus:border-[#FFB600] outline-none h-32 resize-none"
                                             value={editForm.description}
                                             onChange={(e) => setEditForm({...editForm, description: e.target.value})}
                                         />
@@ -751,7 +750,7 @@ const ProductInventory: React.FC<ProductInventoryProps> = ({ products, setProduc
                             <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm h-80">
                                 <div className="flex items-center justify-between mb-6">
                                     <div className="flex items-center gap-2">
-                                        <TrendingUp size={20} className="text-blue-600" />
+                                        <TrendingUp size={20} className="text-[#FFB600]" />
                                         <h4 className="font-bold text-slate-800">Inventory Trends</h4>
                                     </div>
                                 </div>
@@ -767,10 +766,10 @@ const ProductInventory: React.FC<ProductInventoryProps> = ({ products, setProduc
                                             <Line 
                                                 type="monotone" 
                                                 dataKey="stock" 
-                                                stroke="#2563eb" 
+                                                stroke="#FFB600" 
                                                 strokeWidth={3} 
-                                                dot={{ fill: '#ffffff', stroke: '#2563eb', strokeWidth: 2, r: 4 }} 
-                                                activeDot={{ r: 6, fill: '#2563eb' }} 
+                                                dot={{ fill: '#ffffff', stroke: '#FFB600', strokeWidth: 2, r: 4 }} 
+                                                activeDot={{ r: 6, fill: '#FFB600' }} 
                                             />
                                         </LineChart>
                                     </ResponsiveContainer>

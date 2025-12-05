@@ -109,7 +109,7 @@ const CustomerList: React.FC<CustomerListProps> = ({ customers, setCustomers, ti
         </div>
         <button 
             onClick={() => setIsAddModalOpen(true)}
-            className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium transition-colors shadow-sm shadow-blue-900/10 flex items-center gap-2"
+            className="bg-[#FFB600] hover:bg-amber-500 text-slate-900 px-4 py-2 rounded-lg font-bold transition-colors shadow-sm flex items-center gap-2"
         >
           <UserPlus size={18} /> Add Customer
         </button>
@@ -122,7 +122,7 @@ const CustomerList: React.FC<CustomerListProps> = ({ customers, setCustomers, ti
             <input 
               type="text" 
               placeholder="Search customers by name, address, or system ID..." 
-              className="w-full pl-10 pr-4 py-2 rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="w-full pl-10 pr-4 py-2 rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-[#FFB600] focus:border-transparent"
             />
           </div>
         </div>
@@ -132,7 +132,7 @@ const CustomerList: React.FC<CustomerListProps> = ({ customers, setCustomers, ti
             <div 
                 key={customer.id} 
                 onClick={() => setSelectedCustomer(customer)}
-                className="border border-slate-200 rounded-lg p-5 hover:border-blue-300 transition-all hover:shadow-md bg-white group cursor-pointer"
+                className="border border-slate-200 rounded-lg p-5 hover:border-[#FFB600] transition-all hover:shadow-md bg-white group cursor-pointer"
             >
               <div className="flex flex-col lg:flex-row justify-between lg:items-center gap-4">
                 <div className="flex-1">
@@ -201,7 +201,7 @@ const CustomerList: React.FC<CustomerListProps> = ({ customers, setCustomers, ti
                         <label className="block text-sm font-medium text-slate-700 mb-1">Customer Name *</label>
                         <input 
                             type="text" 
-                            className="w-full p-2.5 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 outline-none" 
+                            className="w-full p-2.5 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-[#FFB600] focus:border-[#FFB600] outline-none" 
                             placeholder="e.g. Acme Corp"
                             value={newCustomer.name}
                             onChange={(e) => setNewCustomer({...newCustomer, name: e.target.value})}
@@ -212,7 +212,7 @@ const CustomerList: React.FC<CustomerListProps> = ({ customers, setCustomers, ti
                             <label className="block text-sm font-medium text-slate-700 mb-1">Email *</label>
                             <input 
                                 type="email" 
-                                className="w-full p-2.5 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 outline-none" 
+                                className="w-full p-2.5 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-[#FFB600] focus:border-[#FFB600] outline-none" 
                                 placeholder="contact@example.com"
                                 value={newCustomer.email}
                                 onChange={(e) => setNewCustomer({...newCustomer, email: e.target.value})}
@@ -222,7 +222,7 @@ const CustomerList: React.FC<CustomerListProps> = ({ customers, setCustomers, ti
                             <label className="block text-sm font-medium text-slate-700 mb-1">Phone</label>
                             <input 
                                 type="tel" 
-                                className="w-full p-2.5 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 outline-none" 
+                                className="w-full p-2.5 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-[#FFB600] focus:border-[#FFB600] outline-none" 
                                 placeholder="(555) 123-4567"
                                 value={newCustomer.phone}
                                 onChange={(e) => setNewCustomer({...newCustomer, phone: e.target.value})}
@@ -233,7 +233,7 @@ const CustomerList: React.FC<CustomerListProps> = ({ customers, setCustomers, ti
                         <label className="block text-sm font-medium text-slate-700 mb-1">Address</label>
                         <input 
                             type="text" 
-                            className="w-full p-2.5 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 outline-none" 
+                            className="w-full p-2.5 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-[#FFB600] focus:border-[#FFB600] outline-none" 
                             placeholder="123 Main St, City, State"
                             value={newCustomer.address}
                             onChange={(e) => setNewCustomer({...newCustomer, address: e.target.value})}
@@ -243,7 +243,7 @@ const CustomerList: React.FC<CustomerListProps> = ({ customers, setCustomers, ti
                         <label className="block text-sm font-medium text-slate-700 mb-1">Monthly Contract Value ($)</label>
                         <input 
                             type="number" 
-                            className="w-full p-2.5 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 outline-none" 
+                            className="w-full p-2.5 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-[#FFB600] focus:border-[#FFB600] outline-none" 
                             placeholder="0.00"
                             value={newCustomer.contractValue}
                             onChange={(e) => setNewCustomer({...newCustomer, contractValue: Number(e.target.value)})}
@@ -252,7 +252,7 @@ const CustomerList: React.FC<CustomerListProps> = ({ customers, setCustomers, ti
                     <div>
                         <label className="block text-sm font-medium text-slate-700 mb-1">Notes</label>
                         <textarea 
-                            className="w-full p-2.5 border border-slate-300 rounded-lg text-sm h-24 focus:ring-2 focus:ring-blue-500 outline-none resize-none" 
+                            className="w-full p-2.5 border border-slate-300 rounded-lg text-sm h-24 focus:ring-2 focus:ring-[#FFB600] focus:border-[#FFB600] outline-none resize-none" 
                             placeholder="Gate codes, access info, etc."
                             value={newCustomer.notes}
                             onChange={(e) => setNewCustomer({...newCustomer, notes: e.target.value})}
@@ -270,7 +270,7 @@ const CustomerList: React.FC<CustomerListProps> = ({ customers, setCustomers, ti
                     <button 
                         onClick={handleAddCustomer}
                         disabled={!newCustomer.name || !newCustomer.email}
-                        className="px-6 py-2 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition-colors shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
+                        className="px-6 py-2 bg-[#FFB600] text-slate-900 font-bold rounded-lg hover:bg-amber-500 transition-colors shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                         Create Customer
                     </button>
@@ -316,7 +316,7 @@ const CustomerList: React.FC<CustomerListProps> = ({ customers, setCustomers, ti
                             onClick={() => setActiveDetailTab(tab)}
                             className={`px-4 py-3 text-sm font-medium border-b-2 transition-colors capitalize ${
                                 activeDetailTab === tab 
-                                ? 'border-blue-600 text-blue-600' 
+                                ? 'border-[#FFB600] text-[#FFB600]' 
                                 : 'border-transparent text-slate-500 hover:text-slate-700'
                             }`}
                         >

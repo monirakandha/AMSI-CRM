@@ -83,13 +83,13 @@ const SalesTeam: React.FC<SalesTeamProps> = ({ staff, leads, setLeads }) => {
              <div className="flex bg-white rounded-lg p-1 border border-slate-200 shadow-sm">
                 <button 
                     onClick={() => setActiveTab('leads')}
-                    className={`px-4 py-1.5 rounded text-sm font-medium transition-colors ${activeTab === 'leads' ? 'bg-blue-50 text-blue-600' : 'text-slate-500 hover:text-slate-800'}`}
+                    className={`px-4 py-1.5 rounded text-sm font-medium transition-colors ${activeTab === 'leads' ? 'bg-amber-50 text-[#FFB600]' : 'text-slate-500 hover:text-slate-800'}`}
                 >
                     Pipeline
                 </button>
                 <button 
                     onClick={() => setActiveTab('team')}
-                    className={`px-4 py-1.5 rounded text-sm font-medium transition-colors ${activeTab === 'team' ? 'bg-blue-50 text-blue-600' : 'text-slate-500 hover:text-slate-800'}`}
+                    className={`px-4 py-1.5 rounded text-sm font-medium transition-colors ${activeTab === 'team' ? 'bg-amber-50 text-[#FFB600]' : 'text-slate-500 hover:text-slate-800'}`}
                 >
                     Team Members
                 </button>
@@ -97,7 +97,7 @@ const SalesTeam: React.FC<SalesTeamProps> = ({ staff, leads, setLeads }) => {
             {activeTab === 'leads' && (
                 <button 
                     onClick={() => setIsLeadModalOpen(true)}
-                    className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium transition-colors shadow-sm flex items-center gap-2"
+                    className="bg-[#FFB600] hover:bg-amber-500 text-slate-900 px-4 py-2 rounded-lg font-bold transition-colors shadow-sm flex items-center gap-2"
                 >
                     <Plus size={18} /> New Lead
                 </button>
@@ -277,7 +277,7 @@ const SalesTeam: React.FC<SalesTeamProps> = ({ staff, leads, setLeads }) => {
                 </div>
                 <div className="p-4 border-t border-slate-100 flex justify-end gap-3">
                     <button onClick={() => setIsLeadModalOpen(false)} className="px-4 py-2 text-slate-600 font-medium hover:bg-slate-100 rounded-lg">Cancel</button>
-                    <button onClick={handleCreateLead} className="px-4 py-2 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700">Add Lead</button>
+                    <button onClick={handleCreateLead} className="px-4 py-2 bg-[#FFB600] text-slate-900 font-bold rounded-lg hover:bg-amber-500">Add Lead</button>
                 </div>
             </div>
           </div>

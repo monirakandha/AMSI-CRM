@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { ShieldCheck, Mail, Lock, LogIn, AlertCircle, User, UserPlus } from 'lucide-react';
 import { Staff, Role } from '../types';
@@ -79,8 +78,8 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
     <div className="min-h-screen bg-slate-100 flex items-center justify-center p-4">
       <div className="bg-white rounded-2xl shadow-xl w-full max-w-md overflow-hidden flex flex-col">
         <div className="bg-slate-900 p-8 text-center">
-          <div className="inline-flex p-3 bg-blue-600 rounded-xl mb-4 shadow-lg shadow-blue-900/50">
-            <ShieldCheck className="w-10 h-10 text-white" />
+          <div className="inline-flex p-3 bg-[#FFB600] rounded-xl mb-4 shadow-lg shadow-orange-500/20">
+            <ShieldCheck className="w-10 h-10 text-slate-900" />
           </div>
           <h1 className="text-2xl font-bold text-white tracking-tight">SecureLogic CRM</h1>
           <p className="text-slate-400 text-sm mt-2">Enterprise Security Management System</p>
@@ -90,13 +89,13 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
           <div className="flex bg-slate-100 p-1 rounded-lg mb-6">
             <button 
                 onClick={() => { setMode('login'); setError(''); }}
-                className={`flex-1 py-2 text-sm font-medium rounded-md transition-all ${mode === 'login' ? 'bg-white text-blue-600 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
+                className={`flex-1 py-2 text-sm font-medium rounded-md transition-all ${mode === 'login' ? 'bg-white text-slate-900 shadow-sm border border-slate-200' : 'text-slate-500 hover:text-slate-700'}`}
             >
                 Login
             </button>
             <button 
                 onClick={() => { setMode('register'); setError(''); }}
-                className={`flex-1 py-2 text-sm font-medium rounded-md transition-all ${mode === 'register' ? 'bg-white text-blue-600 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
+                className={`flex-1 py-2 text-sm font-medium rounded-md transition-all ${mode === 'register' ? 'bg-white text-slate-900 shadow-sm border border-slate-200' : 'text-slate-500 hover:text-slate-700'}`}
             >
                 Register
             </button>
@@ -120,7 +119,7 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
                         required
                         value={name}
                         onChange={(e) => setName(e.target.value)}
-                        className="w-full pl-10 pr-4 py-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
+                        className="w-full pl-10 pr-4 py-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-[#FFB600] focus:border-[#FFB600] outline-none transition-all"
                         placeholder="John Doe"
                         />
                     </div>
@@ -136,7 +135,7 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
                   required
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="w-full pl-10 pr-4 py-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
+                  className="w-full pl-10 pr-4 py-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-[#FFB600] focus:border-[#FFB600] outline-none transition-all"
                   placeholder="name@securelogic.com"
                 />
               </div>
@@ -151,7 +150,7 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
                   required
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="w-full pl-10 pr-4 py-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
+                  className="w-full pl-10 pr-4 py-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-[#FFB600] focus:border-[#FFB600] outline-none transition-all"
                   placeholder="••••••••"
                 />
               </div>
@@ -163,7 +162,7 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
                     <select 
                         value={role}
                         onChange={(e) => setRole(e.target.value as Role)}
-                        className="w-full pl-3 pr-4 py-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all bg-white"
+                        className="w-full pl-3 pr-4 py-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-[#FFB600] focus:border-[#FFB600] outline-none transition-all bg-white"
                     >
                         {Object.values(Role).map(r => (
                             <option key={r} value={r}>{r}</option>
@@ -175,10 +174,10 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
             <button 
               type="submit" 
               disabled={isLoading}
-              className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-lg transition-all shadow-md flex items-center justify-center gap-2 disabled:opacity-70"
+              className="w-full bg-[#FFB600] hover:bg-amber-500 text-slate-900 font-bold py-3 rounded-lg transition-all shadow-md flex items-center justify-center gap-2 disabled:opacity-70"
             >
               {isLoading ? (
-                <span className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
+                <span className="w-5 h-5 border-2 border-slate-800 border-t-transparent rounded-full animate-spin"></span>
               ) : (
                 <>
                   {mode === 'login' ? <LogIn size={20} /> : <UserPlus size={20} />} 

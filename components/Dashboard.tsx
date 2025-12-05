@@ -50,7 +50,7 @@ const Dashboard: React.FC<DashboardProps> = ({ customers, tickets, invoices }) =
           value={`$${totalRevenue.toLocaleString()}`} 
           icon={TrendingUp} 
           trend="+5.2%" 
-          color="blue" 
+          color="amber" 
         />
         <StatCard 
           title="Active Subscriptions" 
@@ -71,7 +71,7 @@ const Dashboard: React.FC<DashboardProps> = ({ customers, tickets, invoices }) =
           value={openTickets.toString()} 
           icon={AlertTriangle} 
           trend={openTickets > 5 ? "High Load" : "Normal"} 
-          color={openTickets > 5 ? "amber" : "green"} 
+          color={openTickets > 5 ? "red" : "green"} 
         />
         <StatCard 
           title="Avg Resolution Time" 
@@ -101,8 +101,8 @@ const Dashboard: React.FC<DashboardProps> = ({ customers, tickets, invoices }) =
                     <stop offset="95%" stopColor="#ef4444" stopOpacity={0}/>
                   </linearGradient>
                   <linearGradient id="colorService" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.1}/>
-                    <stop offset="95%" stopColor="#3b82f6" stopOpacity={0}/>
+                    <stop offset="5%" stopColor="#FFB600" stopOpacity={0.1}/>
+                    <stop offset="95%" stopColor="#FFB600" stopOpacity={0}/>
                   </linearGradient>
                 </defs>
                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" />
@@ -113,7 +113,7 @@ const Dashboard: React.FC<DashboardProps> = ({ customers, tickets, invoices }) =
                 />
                 <Legend />
                 <Area type="monotone" dataKey="alarms" stroke="#ef4444" fillOpacity={1} fill="url(#colorAlarms)" name="Alarm Triggers" strokeWidth={2} />
-                <Area type="monotone" dataKey="service" stroke="#3b82f6" fillOpacity={1} fill="url(#colorService)" name="Service Calls" strokeWidth={2} />
+                <Area type="monotone" dataKey="service" stroke="#FFB600" fillOpacity={1} fill="url(#colorService)" name="Service Calls" strokeWidth={2} />
               </AreaChart>
             </ResponsiveContainer>
           </div>
@@ -132,8 +132,8 @@ const Dashboard: React.FC<DashboardProps> = ({ customers, tickets, invoices }) =
             
             <div className="mt-8 p-4 bg-slate-50 rounded-lg border border-slate-100">
                 <div className="flex items-start gap-3">
-                    <div className="p-2 bg-blue-100 text-blue-600 rounded-lg">
-                        <TrendingUp size={18} />
+                    <div className="p-2 bg-amber-100 text-[#FFB600] rounded-lg">
+                        <TrendingUp size={18} className="text-amber-600" />
                     </div>
                     <div>
                         <p className="text-sm font-semibold text-slate-800">AI Insight</p>
@@ -153,7 +153,7 @@ const StatCard: React.FC<{ title: string; value: string; icon: any; trend: strin
         blue: 'text-blue-600 bg-blue-100',
         indigo: 'text-indigo-600 bg-indigo-100',
         purple: 'text-purple-600 bg-purple-100',
-        amber: 'text-amber-600 bg-amber-100',
+        amber: 'text-[#FFB600] bg-amber-100', // Custom Amber
         green: 'text-green-600 bg-green-100',
         emerald: 'text-emerald-600 bg-emerald-100',
         red: 'text-red-600 bg-red-100',

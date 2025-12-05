@@ -96,7 +96,7 @@ const TicketSystem: React.FC<TicketSystemProps> = ({ tickets, customers, setTick
         </div>
         <button 
             onClick={() => setIsNewModalOpen(true)}
-            className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium shadow-sm transition-all flex items-center gap-2"
+            className="bg-[#FFB600] hover:bg-amber-500 text-slate-900 px-4 py-2 rounded-lg font-bold shadow-sm transition-all flex items-center gap-2"
         >
           <Wrench size={18} /> New Ticket
         </button>
@@ -121,10 +121,10 @@ const TicketSystem: React.FC<TicketSystemProps> = ({ tickets, customers, setTick
                             <div 
                                 key={ticket.id} 
                                 onClick={() => setEditingTicket(ticket)}
-                                className="bg-white p-4 rounded-lg shadow-sm border border-slate-200 hover:shadow-md transition-shadow cursor-pointer group hover:border-blue-300"
+                                className="bg-white p-4 rounded-lg shadow-sm border border-slate-200 hover:shadow-md transition-shadow cursor-pointer group hover:border-[#FFB600]"
                             >
                                 <div className="flex justify-between items-start mb-2">
-                                    <span className="text-xs font-mono text-slate-400 group-hover:text-blue-500">{ticket.id}</span>
+                                    <span className="text-xs font-mono text-slate-400 group-hover:text-[#FFB600]">{ticket.id}</span>
                                     <div className="flex gap-1">
                                         {ticket.jobType && (
                                             <span className="text-[10px] bg-slate-100 text-slate-600 px-2 py-0.5 rounded-full border border-slate-200 uppercase font-semibold">
@@ -136,16 +136,16 @@ const TicketSystem: React.FC<TicketSystemProps> = ({ tickets, customers, setTick
                                         </span>
                                     </div>
                                 </div>
-                                <h4 className="font-bold text-slate-800 mb-1 leading-tight group-hover:text-blue-600 transition-colors">{ticket.title}</h4>
+                                <h4 className="font-bold text-slate-800 mb-1 leading-tight group-hover:text-[#FFB600] transition-colors">{ticket.title}</h4>
                                 <p className="text-sm text-slate-500 mb-3 line-clamp-2">{ticket.description}</p>
                                 
                                 {ticket.aiAnalysis && (
-                                    <div className="bg-blue-50 border border-blue-100 rounded p-2 mb-3">
-                                        <div className="flex items-center gap-1.5 text-blue-700 mb-1">
+                                    <div className="bg-amber-50 border border-amber-100 rounded p-2 mb-3">
+                                        <div className="flex items-center gap-1.5 text-amber-700 mb-1">
                                             <BrainCircuit size={12} />
                                             <span className="text-xs font-bold">AI Suggestion</span>
                                         </div>
-                                        <p className="text-xs text-blue-900 leading-snug">{ticket.aiAnalysis.suggestedAction}</p>
+                                        <p className="text-xs text-slate-700 leading-snug">{ticket.aiAnalysis.suggestedAction}</p>
                                     </div>
                                 )}
 
@@ -183,7 +183,7 @@ const TicketSystem: React.FC<TicketSystemProps> = ({ tickets, customers, setTick
                         <div>
                             <label className="block text-sm font-medium text-slate-700 mb-1">Customer</label>
                             <select 
-                                className="w-full border border-slate-300 rounded-lg p-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none"
+                                className="w-full border border-slate-300 rounded-lg p-2 text-sm focus:ring-2 focus:ring-[#FFB600] focus:border-[#FFB600] outline-none"
                                 onChange={(e) => {
                                     const c = customers.find(cust => cust.id === e.target.value);
                                     setNewTicket(prev => ({...prev, customerId: e.target.value, systemId: c?.systems[0]?.id || ''}));
@@ -196,7 +196,7 @@ const TicketSystem: React.FC<TicketSystemProps> = ({ tickets, customers, setTick
                         <div>
                             <label className="block text-sm font-medium text-slate-700 mb-1">System</label>
                             <select 
-                                className="w-full border border-slate-300 rounded-lg p-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none"
+                                className="w-full border border-slate-300 rounded-lg p-2 text-sm focus:ring-2 focus:ring-[#FFB600] focus:border-[#FFB600] outline-none"
                                 value={newTicket.systemId}
                                 onChange={(e) => setNewTicket(prev => ({...prev, systemId: e.target.value}))}
                                 disabled={!newTicket.customerId}
@@ -214,7 +214,7 @@ const TicketSystem: React.FC<TicketSystemProps> = ({ tickets, customers, setTick
                         <div>
                             <label className="block text-sm font-medium text-slate-700 mb-1">Job Type</label>
                             <select 
-                                className="w-full border border-slate-300 rounded-lg p-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none"
+                                className="w-full border border-slate-300 rounded-lg p-2 text-sm focus:ring-2 focus:ring-[#FFB600] focus:border-[#FFB600] outline-none"
                                 value={newTicket.jobType}
                                 onChange={(e) => setNewTicket(prev => ({...prev, jobType: e.target.value as JobType}))}
                             >
@@ -224,7 +224,7 @@ const TicketSystem: React.FC<TicketSystemProps> = ({ tickets, customers, setTick
                         <div>
                             <label className="block text-sm font-medium text-slate-700 mb-1">Priority</label>
                             <select 
-                                className="w-full border border-slate-300 rounded-lg p-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none"
+                                className="w-full border border-slate-300 rounded-lg p-2 text-sm focus:ring-2 focus:ring-[#FFB600] focus:border-[#FFB600] outline-none"
                                 value={newTicket.priority}
                                 onChange={(e) => setNewTicket(prev => ({...prev, priority: e.target.value as TicketPriority}))}
                             >
@@ -236,7 +236,7 @@ const TicketSystem: React.FC<TicketSystemProps> = ({ tickets, customers, setTick
                     <div>
                         <label className="block text-sm font-medium text-slate-700 mb-1">Assign Technician (Optional)</label>
                         <select 
-                            className="w-full border border-slate-300 rounded-lg p-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none"
+                            className="w-full border border-slate-300 rounded-lg p-2 text-sm focus:ring-2 focus:ring-[#FFB600] focus:border-[#FFB600] outline-none"
                             value={newTicket.assignedTech || ''}
                             onChange={(e) => {
                                 const newTech = e.target.value;
@@ -259,7 +259,7 @@ const TicketSystem: React.FC<TicketSystemProps> = ({ tickets, customers, setTick
                         <label className="block text-sm font-medium text-slate-700 mb-1">Issue Title</label>
                         <input 
                             type="text" 
-                            className="w-full border border-slate-300 rounded-lg p-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none"
+                            className="w-full border border-slate-300 rounded-lg p-2 text-sm focus:ring-2 focus:ring-[#FFB600] focus:border-[#FFB600] outline-none"
                             placeholder="e.g. Battery Fault on Zone 2"
                             onChange={(e) => setNewTicket(prev => ({...prev, title: e.target.value}))}
                         />
@@ -271,14 +271,14 @@ const TicketSystem: React.FC<TicketSystemProps> = ({ tickets, customers, setTick
                             <button 
                                 onClick={handleAnalyze}
                                 disabled={isAnalyzing || !newTicket.description || !newTicket.systemId}
-                                className="text-xs bg-blue-100 text-blue-700 px-2 py-1 rounded-full font-medium flex items-center gap-1 hover:bg-blue-200 disabled:opacity-50 transition-colors"
+                                className="text-xs bg-amber-100 text-[#FFB600] px-2 py-1 rounded-full font-medium flex items-center gap-1 hover:bg-amber-200 disabled:opacity-50 transition-colors"
                             >
                                 {isAnalyzing ? <Loader2 className="animate-spin" size={12} /> : <BrainCircuit size={12} />}
                                 AI Analyze
                             </button>
                         </div>
                         <textarea 
-                            className="w-full border border-slate-300 rounded-lg p-3 text-sm h-32 focus:ring-2 focus:ring-blue-500 outline-none resize-none"
+                            className="w-full border border-slate-300 rounded-lg p-3 text-sm h-32 focus:ring-2 focus:ring-[#FFB600] focus:border-[#FFB600] outline-none resize-none"
                             placeholder="Describe the issue in detail to use AI analysis..."
                             onChange={(e) => setNewTicket(prev => ({...prev, description: e.target.value}))}
                         />
@@ -336,7 +336,7 @@ const TicketSystem: React.FC<TicketSystemProps> = ({ tickets, customers, setTick
                     <button 
                         onClick={handleCreateTicket}
                         disabled={!newTicket.title || !newTicket.customerId}
-                        className="px-4 py-2 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition-colors shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
+                        className="px-4 py-2 bg-[#FFB600] text-slate-900 font-bold rounded-lg hover:bg-amber-500 transition-colors shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                         Create Ticket
                     </button>
@@ -352,7 +352,7 @@ const TicketSystem: React.FC<TicketSystemProps> = ({ tickets, customers, setTick
                 <div className="p-6 border-b border-slate-100 flex justify-between items-center bg-slate-50">
                     <div>
                         <h3 className="text-xl font-bold text-slate-800 flex items-center gap-2">
-                            <Edit2 size={20} className="text-blue-600" /> Edit Ticket
+                            <Edit2 size={20} className="text-[#FFB600]" /> Edit Ticket
                         </h3>
                         <p className="text-xs text-slate-500 mt-1 font-mono">ID: {editingTicket.id}</p>
                     </div>
@@ -366,7 +366,7 @@ const TicketSystem: React.FC<TicketSystemProps> = ({ tickets, customers, setTick
                         <label className="block text-sm font-medium text-slate-700 mb-1">Issue Title</label>
                         <input 
                             type="text" 
-                            className="w-full border border-slate-300 rounded-lg p-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none font-bold text-slate-800"
+                            className="w-full border border-slate-300 rounded-lg p-2 text-sm focus:ring-2 focus:ring-[#FFB600] focus:border-[#FFB600] outline-none font-bold text-slate-800"
                             value={editingTicket.title}
                             onChange={(e) => setEditingTicket({...editingTicket, title: e.target.value})}
                         />
@@ -376,7 +376,7 @@ const TicketSystem: React.FC<TicketSystemProps> = ({ tickets, customers, setTick
                         <div>
                             <label className="block text-sm font-medium text-slate-700 mb-1">Status</label>
                             <select 
-                                className="w-full border border-slate-300 rounded-lg p-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none"
+                                className="w-full border border-slate-300 rounded-lg p-2 text-sm focus:ring-2 focus:ring-[#FFB600] focus:border-[#FFB600] outline-none"
                                 value={editingTicket.status}
                                 onChange={(e) => setEditingTicket({...editingTicket, status: e.target.value as TicketStatus})}
                             >
@@ -386,7 +386,7 @@ const TicketSystem: React.FC<TicketSystemProps> = ({ tickets, customers, setTick
                         <div>
                             <label className="block text-sm font-medium text-slate-700 mb-1">Priority</label>
                             <select 
-                                className="w-full border border-slate-300 rounded-lg p-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none"
+                                className="w-full border border-slate-300 rounded-lg p-2 text-sm focus:ring-2 focus:ring-[#FFB600] focus:border-[#FFB600] outline-none"
                                 value={editingTicket.priority}
                                 onChange={(e) => setEditingTicket({...editingTicket, priority: e.target.value as TicketPriority})}
                             >
@@ -396,7 +396,7 @@ const TicketSystem: React.FC<TicketSystemProps> = ({ tickets, customers, setTick
                         <div>
                             <label className="block text-sm font-medium text-slate-700 mb-1">Job Type</label>
                             <select 
-                                className="w-full border border-slate-300 rounded-lg p-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none"
+                                className="w-full border border-slate-300 rounded-lg p-2 text-sm focus:ring-2 focus:ring-[#FFB600] focus:border-[#FFB600] outline-none"
                                 value={editingTicket.jobType || JobType.SERVICE}
                                 onChange={(e) => setEditingTicket({...editingTicket, jobType: e.target.value as JobType})}
                             >
@@ -434,7 +434,7 @@ const TicketSystem: React.FC<TicketSystemProps> = ({ tickets, customers, setTick
                     <div>
                         <label className="block text-sm font-medium text-slate-700 mb-1">Description</label>
                         <textarea 
-                            className="w-full border border-slate-300 rounded-lg p-3 text-sm h-32 focus:ring-2 focus:ring-blue-500 outline-none resize-none"
+                            className="w-full border border-slate-300 rounded-lg p-3 text-sm h-32 focus:ring-2 focus:ring-[#FFB600] focus:border-[#FFB600] outline-none resize-none"
                             value={editingTicket.description}
                             onChange={(e) => setEditingTicket({...editingTicket, description: e.target.value})}
                         />
@@ -450,7 +450,7 @@ const TicketSystem: React.FC<TicketSystemProps> = ({ tickets, customers, setTick
                     </button>
                     <button 
                         onClick={handleUpdateTicket}
-                        className="px-6 py-2 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition-colors shadow-sm flex items-center gap-2"
+                        className="px-6 py-2 bg-[#FFB600] text-slate-900 font-bold rounded-lg hover:bg-amber-500 transition-colors shadow-sm flex items-center gap-2"
                     >
                         <Save size={18} /> Save Changes
                     </button>

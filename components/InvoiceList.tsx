@@ -108,7 +108,7 @@ const InvoiceList: React.FC<InvoiceListProps> = ({ invoices, customers, products
         </div>
         <button 
           onClick={() => setIsModalOpen(true)}
-          className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium transition-colors shadow-sm shadow-blue-900/10 flex items-center gap-2"
+          className="bg-[#FFB600] hover:bg-amber-500 text-slate-900 px-4 py-2 rounded-lg font-bold transition-colors shadow-sm flex items-center gap-2"
         >
           <Plus size={18} /> Create Invoice
         </button>
@@ -121,7 +121,7 @@ const InvoiceList: React.FC<InvoiceListProps> = ({ invoices, customers, products
             <input 
               type="text" 
               placeholder="Search invoices by ID or customer..." 
-              className="w-full pl-10 pr-4 py-2 rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="w-full pl-10 pr-4 py-2 rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-[#FFB600] focus:border-transparent"
             />
           </div>
         </div>
@@ -175,7 +175,7 @@ const InvoiceList: React.FC<InvoiceListProps> = ({ invoices, customers, products
             <div className="bg-white rounded-2xl w-full max-w-4xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
                 <div className="p-6 border-b border-slate-100 flex justify-between items-center bg-slate-50">
                     <h3 className="text-xl font-bold text-slate-800 flex items-center gap-2">
-                        <FileText className="text-blue-600" /> New Invoice
+                        <FileText className="text-[#FFB600]" /> New Invoice
                     </h3>
                     <button onClick={() => setIsModalOpen(false)} className="text-slate-400 hover:text-slate-600">✕</button>
                 </div>
@@ -187,7 +187,7 @@ const InvoiceList: React.FC<InvoiceListProps> = ({ invoices, customers, products
                             <div className="relative">
                                 <User className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={16} />
                                 <select 
-                                    className="w-full pl-10 border border-slate-300 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-blue-500 outline-none bg-white"
+                                    className="w-full pl-10 border border-slate-300 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-[#FFB600] focus:border-[#FFB600] outline-none bg-white"
                                     onChange={(e) => setNewInvoice(prev => ({...prev, customerId: e.target.value}))}
                                     value={newInvoice.customerId}
                                 >
@@ -202,7 +202,7 @@ const InvoiceList: React.FC<InvoiceListProps> = ({ invoices, customers, products
                                 <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={16} />
                                 <input 
                                     type="date" 
-                                    className="w-full pl-10 border border-slate-300 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-blue-500 outline-none"
+                                    className="w-full pl-10 border border-slate-300 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-[#FFB600] focus:border-[#FFB600] outline-none"
                                     onChange={(e) => setNewInvoice(prev => ({...prev, dueDate: e.target.value}))}
                                 />
                             </div>
@@ -225,7 +225,7 @@ const InvoiceList: React.FC<InvoiceListProps> = ({ invoices, customers, products
                                     <tr key={idx}>
                                         <td className="px-4 py-2">
                                             <select 
-                                                className="w-full p-2 border border-slate-200 rounded focus:border-blue-500 outline-none text-sm"
+                                                className="w-full p-2 border border-slate-200 rounded focus:border-[#FFB600] outline-none text-sm"
                                                 value={item.productId || ''}
                                                 onChange={(e) => handleUpdateItem(idx, 'productId', e.target.value)}
                                             >
@@ -239,7 +239,7 @@ const InvoiceList: React.FC<InvoiceListProps> = ({ invoices, customers, products
                                             <input 
                                                 type="number" 
                                                 min="1"
-                                                className="w-full p-2 border border-slate-200 rounded focus:border-blue-500 outline-none text-center"
+                                                className="w-full p-2 border border-slate-200 rounded focus:border-[#FFB600] outline-none text-center"
                                                 value={item.quantity}
                                                 onChange={(e) => handleUpdateItem(idx, 'quantity', parseInt(e.target.value))}
                                             />
@@ -308,7 +308,7 @@ const InvoiceList: React.FC<InvoiceListProps> = ({ invoices, customers, products
                     <button 
                         onClick={handleCreateInvoice}
                         disabled={!newInvoice.customerId || newInvoice.items.length === 0}
-                        className="px-6 py-2 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition-colors shadow-sm disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                        className="px-6 py-2 bg-[#FFB600] text-slate-900 font-bold rounded-lg hover:bg-amber-500 transition-colors shadow-sm disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
                     >
                         <DollarSign size={18} /> Save Invoice
                     </button>

@@ -94,7 +94,7 @@ const JobCalendar: React.FC<JobCalendarProps> = ({ tickets, staff, customers, se
             </div>
             <button 
                 onClick={() => setIsNewJobModalOpen(true)}
-                className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium transition-colors shadow-sm flex items-center gap-2"
+                className="bg-[#FFB600] hover:bg-amber-500 text-slate-900 px-4 py-2 rounded-lg font-bold transition-colors shadow-sm flex items-center gap-2"
             >
             <Plus size={18} /> Schedule Job
             </button>
@@ -112,7 +112,7 @@ const JobCalendar: React.FC<JobCalendarProps> = ({ tickets, staff, customers, se
                  <button onClick={() => changeMonth(1)} className="p-2 hover:bg-slate-200 rounded-full text-slate-500"><ChevronRight size={20} /></button>
              </div>
              <div className="flex gap-4 text-xs font-medium text-slate-500">
-                 <div className="flex items-center gap-2"><span className="w-2 h-2 rounded-full bg-blue-500"></span> Service</div>
+                 <div className="flex items-center gap-2"><span className="w-2 h-2 rounded-full bg-[#FFB600]"></span> Service</div>
                  <div className="flex items-center gap-2"><span className="w-2 h-2 rounded-full bg-green-500"></span> Install</div>
                  <div className="flex items-center gap-2"><span className="w-2 h-2 rounded-full bg-purple-500"></span> Maintenance</div>
              </div>
@@ -142,7 +142,7 @@ const JobCalendar: React.FC<JobCalendarProps> = ({ tickets, staff, customers, se
                                         className={`w-full text-left text-[10px] px-2 py-1.5 rounded border border-l-4 truncate shadow-sm transition-transform hover:scale-[1.02] ${
                                             job.jobType === JobType.INSTALL ? 'bg-green-50 border-green-200 border-l-green-500 text-green-700' :
                                             job.jobType === JobType.MAINTENANCE ? 'bg-purple-50 border-purple-200 border-l-purple-500 text-purple-700' :
-                                            'bg-blue-50 border-blue-200 border-l-blue-500 text-blue-700'
+                                            'bg-amber-50 border-amber-200 border-l-[#FFB600] text-amber-900'
                                         }`}
                                      >
                                          <span className="font-bold">{job.estimatedDuration?.split(' ')[0]}h</span> {job.title}
@@ -249,7 +249,7 @@ const JobCalendar: React.FC<JobCalendarProps> = ({ tickets, staff, customers, se
 
                   <div className="p-4 border-t border-slate-200 bg-slate-50 flex justify-end gap-3">
                       <button onClick={() => setIsNewJobModalOpen(false)} className="px-4 py-2 text-slate-600 hover:bg-slate-100 rounded-lg">Cancel</button>
-                      <button onClick={handleCreateJob} className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">Schedule Job</button>
+                      <button onClick={handleCreateJob} className="px-6 py-2 bg-[#FFB600] text-slate-900 font-bold rounded-lg hover:bg-amber-500 transition-colors">Schedule Job</button>
                   </div>
               </div>
           </div>
@@ -326,8 +326,8 @@ const JobCalendar: React.FC<JobCalendarProps> = ({ tickets, staff, customers, se
                           <div className="space-y-6">
                               {/* Job Completion Section */}
                               <div className="bg-white border-2 border-dashed border-slate-200 rounded-xl p-4 flex flex-col items-center justify-center text-center hover:bg-slate-50 transition-colors cursor-pointer group">
-                                  <Camera size={32} className="text-slate-300 group-hover:text-blue-500 mb-2 transition-colors" />
-                                  <h4 className="text-sm font-bold text-slate-600 group-hover:text-blue-600">Upload Site Photos</h4>
+                                  <Camera size={32} className="text-slate-300 group-hover:text-[#FFB600] mb-2 transition-colors" />
+                                  <h4 className="text-sm font-bold text-slate-600 group-hover:text-[#FFB600]">Upload Site Photos</h4>
                                   <p className="text-xs text-slate-400">Before & After images required</p>
                               </div>
 

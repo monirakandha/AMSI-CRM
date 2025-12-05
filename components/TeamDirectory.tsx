@@ -68,7 +68,7 @@ const TeamDirectory: React.FC<TeamDirectoryProps> = ({ staff, setStaff }) => {
         </div>
         <button 
           onClick={() => setIsModalOpen(true)}
-          className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium transition-colors shadow-sm shadow-blue-900/10 flex items-center gap-2"
+          className="bg-[#FFB600] hover:bg-amber-500 text-slate-900 px-4 py-2 rounded-lg font-bold transition-colors shadow-sm flex items-center gap-2"
         >
           <UserPlus size={18} /> Add Team Member
         </button>
@@ -83,13 +83,13 @@ const TeamDirectory: React.FC<TeamDirectoryProps> = ({ staff, setStaff }) => {
               placeholder="Search by name or email..." 
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-10 pr-4 py-2 rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="w-full pl-10 pr-4 py-2 rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-[#FFB600] focus:border-transparent"
             />
           </div>
           <div className="flex items-center gap-2">
             <Filter size={18} className="text-slate-400" />
             <select 
-                className="bg-white border border-slate-300 text-slate-700 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block p-2 outline-none"
+                className="bg-white border border-slate-300 text-slate-700 text-sm rounded-lg focus:ring-[#FFB600] focus:border-[#FFB600] block p-2 outline-none"
                 value={roleFilter}
                 onChange={(e) => setRoleFilter(e.target.value as Role | 'All')}
             >
@@ -105,7 +105,7 @@ const TeamDirectory: React.FC<TeamDirectoryProps> = ({ staff, setStaff }) => {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
             {filteredStaff.map((member) => (
                 <div key={member.id} className="bg-white rounded-xl border border-slate-200 p-6 flex flex-col items-center text-center shadow-sm hover:shadow-md transition-shadow group relative">
-                    <div className="w-20 h-20 bg-slate-100 rounded-full flex items-center justify-center text-slate-500 font-bold text-2xl mb-4 group-hover:bg-blue-50 group-hover:text-blue-600 transition-colors">
+                    <div className="w-20 h-20 bg-slate-100 rounded-full flex items-center justify-center text-slate-500 font-bold text-2xl mb-4 group-hover:bg-[#FFB600] group-hover:text-slate-900 transition-colors">
                         {member.name.charAt(0)}
                     </div>
                     <h3 className="text-lg font-bold text-slate-800 mb-1">{member.name}</h3>
@@ -117,33 +117,23 @@ const TeamDirectory: React.FC<TeamDirectoryProps> = ({ staff, setStaff }) => {
                     <div className="w-full space-y-3 text-sm">
                         <div className="flex items-center justify-center gap-2 text-slate-600">
                             <Mail size={14} className="text-slate-400" />
-                            <a href={`mailto:${member.email}`} className="hover:text-blue-600 truncate max-w-[180px]">{member.email}</a>
+                            <a href={`mailto:${member.email}`} className="hover:text-blue-600 transition-colors truncate max-w-[180px]">
+                                {member.email}
+                            </a>
                         </div>
                         <div className="flex items-center justify-center gap-2 text-slate-600">
                             <Phone size={14} className="text-slate-400" />
-                            <a href={`tel:${member.phone}`} className="hover:text-blue-600">{member.phone}</a>
+                            <span>{member.phone || 'N/A'}</span>
                         </div>
                     </div>
-
-                    <div className="w-full mt-6 pt-4 border-t border-slate-100 flex justify-between items-center text-xs text-slate-400">
-                        <span>ID: {member.id}</span>
-                        {member.activeLeads !== undefined && member.activeLeads > 0 && (
-                            <span className="text-blue-600 font-medium">{member.activeLeads} Active Leads</span>
-                        )}
+                    
+                    <div className="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity">
+                         <button className="text-slate-400 hover:text-slate-600">
+                             <UserCog size={16} />
+                         </button>
                     </div>
                 </div>
             ))}
-            
-            {/* Add New Card Button - Visual cue */}
-            <button 
-                onClick={() => setIsModalOpen(true)}
-                className="rounded-xl border-2 border-dashed border-slate-200 p-6 flex flex-col items-center justify-center text-slate-400 hover:text-blue-600 hover:border-blue-300 hover:bg-blue-50/50 transition-all min-h-[250px]"
-            >
-                <div className="w-16 h-16 rounded-full bg-slate-50 border border-slate-200 flex items-center justify-center mb-4 group-hover:border-blue-200 group-hover:bg-white">
-                    <UserPlus size={24} />
-                </div>
-                <span className="font-medium">Add New Member</span>
-            </button>
           </div>
         </div>
       </div>
@@ -164,17 +154,33 @@ const TeamDirectory: React.FC<TeamDirectoryProps> = ({ staff, setStaff }) => {
                         <label className="block text-sm font-medium text-slate-700 mb-1">Full Name</label>
                         <input 
                             type="text" 
-                            className="w-full border border-slate-300 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-blue-500 outline-none"
-                            placeholder="e.g. Sarah Smith"
+                            className="w-full border border-slate-300 rounded-lg p-2 text-sm focus:ring-2 focus:ring-[#FFB600] focus:border-[#FFB600] outline-none"
                             value={newMember.name || ''}
                             onChange={(e) => setNewMember({...newMember, name: e.target.value})}
                         />
                     </div>
-                    
+                    <div>
+                        <label className="block text-sm font-medium text-slate-700 mb-1">Email</label>
+                        <input 
+                            type="email" 
+                            className="w-full border border-slate-300 rounded-lg p-2 text-sm focus:ring-2 focus:ring-[#FFB600] focus:border-[#FFB600] outline-none"
+                            value={newMember.email || ''}
+                            onChange={(e) => setNewMember({...newMember, email: e.target.value})}
+                        />
+                    </div>
+                    <div>
+                        <label className="block text-sm font-medium text-slate-700 mb-1">Phone</label>
+                        <input 
+                            type="tel" 
+                            className="w-full border border-slate-300 rounded-lg p-2 text-sm focus:ring-2 focus:ring-[#FFB600] focus:border-[#FFB600] outline-none"
+                            value={newMember.phone || ''}
+                            onChange={(e) => setNewMember({...newMember, phone: e.target.value})}
+                        />
+                    </div>
                     <div>
                         <label className="block text-sm font-medium text-slate-700 mb-1">Role</label>
                         <select 
-                            className="w-full border border-slate-300 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-blue-500 outline-none bg-white"
+                            className="w-full border border-slate-300 rounded-lg p-2 text-sm focus:ring-2 focus:ring-[#FFB600] focus:border-[#FFB600] outline-none bg-white"
                             value={newMember.role}
                             onChange={(e) => setNewMember({...newMember, role: e.target.value as Role})}
                         >
@@ -182,28 +188,6 @@ const TeamDirectory: React.FC<TeamDirectoryProps> = ({ staff, setStaff }) => {
                                 <option key={role} value={role}>{role}</option>
                             ))}
                         </select>
-                    </div>
-
-                    <div>
-                        <label className="block text-sm font-medium text-slate-700 mb-1">Email Address</label>
-                        <input 
-                            type="email" 
-                            className="w-full border border-slate-300 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-blue-500 outline-none"
-                            placeholder="sarah@securelogic.com"
-                            value={newMember.email || ''}
-                            onChange={(e) => setNewMember({...newMember, email: e.target.value})}
-                        />
-                    </div>
-
-                    <div>
-                        <label className="block text-sm font-medium text-slate-700 mb-1">Phone Number</label>
-                        <input 
-                            type="tel" 
-                            className="w-full border border-slate-300 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-blue-500 outline-none"
-                            placeholder="(555) 123-4567"
-                            value={newMember.phone || ''}
-                            onChange={(e) => setNewMember({...newMember, phone: e.target.value})}
-                        />
                     </div>
                 </div>
 
@@ -217,7 +201,7 @@ const TeamDirectory: React.FC<TeamDirectoryProps> = ({ staff, setStaff }) => {
                     <button 
                         onClick={handleAddMember}
                         disabled={!newMember.name || !newMember.email}
-                        className="px-6 py-2 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition-colors shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
+                        className="px-6 py-2 bg-[#FFB600] text-slate-900 font-bold rounded-lg hover:bg-amber-500 transition-colors shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                         Add Member
                     </button>

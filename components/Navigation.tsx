@@ -33,7 +33,7 @@ const Navigation: React.FC<NavigationProps> = ({ activeTab, setActiveTab, curren
 
   const getRoleBadgeColor = (role: Role) => {
     switch (role) {
-      case Role.SALES: return 'bg-blue-500';
+      case Role.SALES: return 'bg-[#FFB600] text-slate-900'; // Updated
       case Role.ENGINEER: return 'bg-purple-500';
       case Role.ADMIN: return 'bg-red-500';
       case Role.TECH: return 'bg-green-500';
@@ -47,7 +47,7 @@ const Navigation: React.FC<NavigationProps> = ({ activeTab, setActiveTab, curren
         {companySettings.logo ? (
             <img src={companySettings.logo} alt="Logo" className="w-8 h-8 object-contain rounded" />
         ) : (
-            <ShieldCheck className="w-8 h-8 text-blue-500" />
+            <ShieldCheck className="w-8 h-8 text-[#FFB600]" /> // Updated
         )}
         <div>
           <h1 className="text-xl font-bold tracking-tight">{companySettings.name}</h1>
@@ -58,7 +58,7 @@ const Navigation: React.FC<NavigationProps> = ({ activeTab, setActiveTab, curren
       <div className="px-6 py-4">
         <div 
             onClick={() => setActiveTab('profile')}
-            className={`flex items-center gap-3 p-3 bg-slate-800 rounded-lg border border-slate-700 cursor-pointer hover:bg-slate-750 hover:border-slate-600 transition-all ${activeTab === 'profile' ? 'ring-2 ring-blue-500 border-transparent' : ''}`}
+            className={`flex items-center gap-3 p-3 bg-slate-800 rounded-lg border border-slate-700 cursor-pointer hover:bg-slate-750 hover:border-slate-600 transition-all ${activeTab === 'profile' ? 'ring-2 ring-[#FFB600] border-transparent' : ''}`} // Updated
             title="View Profile"
         >
             <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold text-white shadow-md ${getRoleBadgeColor(currentUser.role)}`}>
@@ -82,11 +82,11 @@ const Navigation: React.FC<NavigationProps> = ({ activeTab, setActiveTab, curren
               onClick={() => setActiveTab(item.id)}
               className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200 ${
                 isActive
-                  ? 'bg-blue-600 text-white shadow-lg shadow-blue-900/50'
+                  ? 'bg-[#FFB600] text-slate-900 shadow-lg shadow-orange-900/20' // Updated for contrast
                   : 'text-slate-400 hover:bg-slate-800 hover:text-white'
               }`}
             >
-              <Icon size={18} />
+              <Icon size={18} className={isActive ? "text-slate-900" : ""} /> 
               <span className="font-medium text-sm">{item.label}</span>
             </button>
           );
