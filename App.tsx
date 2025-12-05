@@ -1,0 +1,157 @@
+import React, { useState } from 'react';
+import Navigation from './components/Navigation';
+import Dashboard from './components/Dashboard';
+import CustomerList from './components/CustomerList';
+import TicketSystem from './components/TicketSystem';
+import ProductInventory from './components/ProductInventory';
+import InvoiceList from './components/InvoiceList';
+import QuoteList from './components/QuoteList';
+import SalesTeam from './components/SalesTeam';
+import EngineerSection from './components/EngineerSection';
+import TeamDirectory from './components/TeamDirectory';
+import Settings from './components/Settings';
+import JobCalendar from './components/JobCalendar';
+import Login from './components/Login';
+
+import { MOCK_CUSTOMERS, MOCK_TICKETS, MOCK_PRODUCTS, MOCK_INVOICES, MOCK_QUOTES, MOCK_STAFF, MOCK_LEADS } from './constants';
+import { Customer, Ticket, Product, Invoice, Quote, Staff, Lead, Role } from './types';
+
+const App: React.FC = () => {
+  const [currentUser, setCurrentUser] = useState<Staff | null>(null);
+  const [activeTab, setActiveTab] = useState('dashboard');
+  
+  // Data State
+  const [customers, setCustomers] = useState<Customer[]>(MOCK_CUSTOMERS);
+  const [tickets, setTickets] = useState<Ticket[]>(MOCK_TICKETS);
+  const [products, setProducts] = useState<Product[]>(MOCK_PRODUCTS);
+  const [invoices, setInvoices] = useState<Invoice[]>(MOCK_INVOICES);
+  const [quotes, setQuotes] = useState<Quote[]>(MOCK_QUOTES);
+  const [staff, setStaff] = useState<Staff[]>(MOCK_STAFF);
+  const [leads, setLeads] = useState<Lead[]>(MOCK_LEADS);
+
+  // Authentication Handler
+  const handleLogin = (user: Staff) => {
+    setCurrentUser(user);
+    // Set initial tab based on role
+    switch (user.role) {
+      case Role.ADMIN: setActiveTab('dashboard'); break;
+      case Role.SALES: setActiveTab('sales'); break;
+      case Role.ENGINEER: setActiveTab('engineers'); break;
+      case Role.TECH: setActiveTab('schedule'); break;
+      default: setActiveTab('dashboard');
+    }
+  };
+
+  const handleLogout = () => {
+    setCurrentUser(null);
+    setActiveTab('dashboard');
+  };
+
+  // Permission Logic
+  const canAccess = (tab: string): boolean => {
+    if (!currentUser) return false;
+    if (currentUser.role === Role.ADMIN) return true;
+
+    const permissions: Record<Role, string[]> = {
+      [Role.SALES]: ['sales', 'customers', 'quotes'],
+      [Role.ENGINEER]: ['engineers', 'quotes', 'sales', 'tickets', 'inventory', 'schedule', 'customers'],
+      [Role.TECH]: ['schedule', 'tickets', 'inventory'],
+      [Role.ADMIN]: [] // Handled above
+    };
+
+    return permissions[currentUser.role]?.includes(tab) || false;
+  };
+
+  const renderContent = () => {
+    if (!canAccess(activeTab)) {
+      return (
+        <div className="flex items-center justify-center h-full text-slate-400">
+            <div className="text-center">
+                <h3 className="text-xl font-medium text-red-500">Access Denied</h3>
+                <p>You do not have permission to view this module.</p>
+            </div>
+        </div>
+      );
+    }
+
+    switch (activeTab) {
+      case 'dashboard':
+        return <Dashboard customers={customers} tickets={tickets} invoices={invoices} />;
+      case 'schedule':
+        return (
+            <JobCalendar 
+                tickets={tickets} 
+                staff={staff} 
+                customers={customers} 
+                setTickets={setTickets} 
+            />
+        );
+      case 'customers':
+        return (
+          <CustomerList 
+            customers={customers} 
+            setCustomers={setCustomers}
+            tickets={tickets} 
+            invoices={invoices} 
+            quotes={quotes} 
+            setTickets={setTickets}
+          />
+        );
+      case 'tickets':
+        return <TicketSystem tickets={tickets} customers={customers} setTickets={setTickets} staff={staff} />;
+      case 'inventory':
+        return <ProductInventory products={products} setProducts={setProducts} />;
+      case 'quotes':
+        return (
+          <QuoteList 
+            quotes={quotes} 
+            customers={customers} 
+            products={products} 
+            setQuotes={setQuotes} 
+            setInvoices={setInvoices}
+            setActiveTab={setActiveTab}
+          />
+        );
+      case 'invoices':
+        return <InvoiceList invoices={invoices} customers={customers} products={products} setInvoices={setInvoices} />;
+      case 'sales':
+        return <SalesTeam staff={staff} leads={leads} setLeads={setLeads} />;
+      case 'engineers':
+        return <EngineerSection staff={staff} leads={leads} setLeads={setLeads} tickets={tickets} />;
+      case 'team':
+        return <TeamDirectory staff={staff} setStaff={setStaff} />;
+      case 'settings':
+        return <Settings />;
+      default:
+        return (
+            <div className="flex items-center justify-center h-full text-slate-400">
+                <div className="text-center">
+                    <h3 className="text-xl font-medium">Coming Soon</h3>
+                    <p>This module is under development.</p>
+                </div>
+            </div>
+        );
+    }
+  };
+
+  // If not logged in, show login screen
+  if (!currentUser) {
+    return <Login onLogin={handleLogin} />;
+  }
+
+  return (
+    <div className="flex h-screen bg-slate-50 overflow-hidden">
+      <Navigation 
+        activeTab={activeTab} 
+        setActiveTab={setActiveTab} 
+        currentUser={currentUser}
+        onLogout={handleLogout}
+      />
+      <main className="flex-1 overflow-auto">
+        {renderContent()}
+      </main>
+    </div>
+  );
+};
+
+export default App;
