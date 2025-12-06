@@ -21,7 +21,7 @@ const Settings: React.FC<SettingsProps> = ({ companySettings, setCompanySettings
 
   // Mock State for other Form Fields
   const [formData, setFormData] = useState({
-    supportEmail: 'support@securelogic.com',
+    supportEmail: 'support@amsi.com',
     supportPhone: '(555) 012-3456',
     address: '123 Security Blvd, Tech City',
     currency: 'USD',

@@ -98,13 +98,13 @@ export const MOCK_SUBSCRIPTIONS: Subscription[] = [
 ];
 
 export const MOCK_STAFF: Staff[] = [
-    { id: "ST-001", name: "John Salesman", role: Role.SALES, email: "john@securelogic.com", phone: "555-001-0001", activeLeads: 5 },
-    { id: "ST-002", name: "Jane Closer", role: Role.SALES, email: "jane@securelogic.com", phone: "555-001-0002", activeLeads: 8 },
-    { id: "ENG-001", name: "Robert Engineer", role: Role.ENGINEER, email: "rob@securelogic.com", phone: "555-002-0001" },
-    { id: "ENG-002", name: "Emily Tech", role: Role.ENGINEER, email: "emily@securelogic.com", phone: "555-002-0002" },
-    { id: "TECH-001", name: "Mike Repairman", role: Role.TECH, email: "mike@securelogic.com", phone: "555-003-0001" },
-    { id: "TECH-002", name: "Sarah Installer", role: Role.TECH, email: "sarah.i@securelogic.com", phone: "555-003-0002" },
-    { id: "ADMIN-001", name: "Sarah Admin", role: Role.ADMIN, email: "admin@securelogic.com", phone: "555-000-0000" }
+    { id: "ST-001", name: "John Salesman", role: Role.SALES, email: "john@amsi.com", phone: "555-001-0001", activeLeads: 5 },
+    { id: "ST-002", name: "Jane Closer", role: Role.SALES, email: "jane@amsi.com", phone: "555-001-0002", activeLeads: 8 },
+    { id: "ENG-001", name: "Robert Engineer", role: Role.ENGINEER, email: "rob@amsi.com", phone: "555-002-0001" },
+    { id: "ENG-002", name: "Emily Tech", role: Role.ENGINEER, email: "emily@amsi.com", phone: "555-002-0002" },
+    { id: "TECH-001", name: "Mike Repairman", role: Role.TECH, email: "mike@amsi.com", phone: "555-003-0001" },
+    { id: "TECH-002", name: "Sarah Installer", role: Role.TECH, email: "sarah.i@amsi.com", phone: "555-003-0002" },
+    { id: "ADMIN-001", name: "Sarah Admin", role: Role.ADMIN, email: "admin@amsi.com", phone: "555-000-0000" }
 ];
 
 export const MOCK_TICKETS: Ticket[] = [

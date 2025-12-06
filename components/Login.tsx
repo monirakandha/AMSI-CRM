@@ -81,7 +81,7 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
           <div className="inline-flex p-3 bg-[#FFB600] rounded-xl mb-4 shadow-lg shadow-orange-500/20">
             <ShieldCheck className="w-10 h-10 text-slate-900" />
           </div>
-          <h1 className="text-2xl font-bold text-white tracking-tight">SecureLogic CRM</h1>
+          <h1 className="text-2xl font-bold text-white tracking-tight">AMSI CRM</h1>
           <p className="text-slate-400 text-sm mt-2">Enterprise Security Management System</p>
         </div>
 
@@ -136,7 +136,7 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   className="w-full pl-10 pr-4 py-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-[#FFB600] focus:border-[#FFB600] outline-none transition-all"
-                  placeholder="name@securelogic.com"
+                  placeholder="name@amsi.com"
                 />
               </div>
             </div>
@@ -191,7 +191,7 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
             <div className="mt-8 pt-6 border-t border-slate-100">
                 <p className="text-xs text-center text-slate-400 mb-4 uppercase font-bold tracking-wider">Quick Demo Login</p>
                 <div className="bg-slate-50 border border-slate-100 rounded p-2 mb-4 text-center">
-                    <p className="text-xs text-slate-500">Default Admin: <span className="font-mono font-bold text-slate-700">admin@securelogic.com</span></p>
+                    <p className="text-xs text-slate-500">Default Admin: <span className="font-mono font-bold text-slate-700">admin@amsi.com</span></p>
                     <p className="text-xs text-slate-500">Password: <span className="font-mono font-bold text-slate-700">password</span></p>
                 </div>
                 <div className="grid grid-cols-2 gap-3">

@@ -34,8 +34,8 @@ const App: React.FC = () => {
 
   // App Settings State
   const [companySettings, setCompanySettings] = useState({
-    name: 'SecureLogic',
-    logo: '' // Base64 string for logo
+    name: 'amsi',
+    logo: 'https://i.ibb.co/9r93Qwh/amsi.png' 
   });
 
   // Authentication Handler
