@@ -37,6 +37,13 @@ export interface AlarmSystem {
   zones: number;
 }
 
+export interface CustomerNote {
+  id: string;
+  content: string;
+  author: string;
+  date: string;
+}
+
 export interface Customer {
   id: string;
   name: string;
@@ -46,6 +53,7 @@ export interface Customer {
   contractValue: number; // Monthly Recurring Revenue
   systems: AlarmSystem[];
   notes: string;
+  noteHistory?: CustomerNote[];
 }
 
 export interface Ticket {

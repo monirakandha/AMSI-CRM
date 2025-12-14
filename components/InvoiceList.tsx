@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Invoice, InvoiceStatus, Customer, Product, InvoiceItem } from '../types';
-import { Search, FileText, Plus, Calendar, User, Trash2, DollarSign, Download, Send } from 'lucide-react';
+import { Search, FileText, Plus, Calendar, User, Trash2, DollarSign, Download, Send, Eye, Edit, X, CheckCircle, AlertCircle, XCircle } from 'lucide-react';
 
 interface InvoiceListProps {
   invoices: Invoice[];
@@ -11,14 +11,20 @@ interface InvoiceListProps {
 
 const InvoiceList: React.FC<InvoiceListProps> = ({ invoices, customers, products, setInvoices }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [viewInvoice, setViewInvoice] = useState<Invoice | null>(null);
+  const [searchTerm, setSearchTerm] = useState('');
+
   const [newInvoice, setNewInvoice] = useState<{
     customerId: string;
     items: Partial<InvoiceItem>[];
     dueDate: string;
+    date: string;
   }>({
     customerId: '',
     items: [],
-    dueDate: ''
+    dueDate: '',
+    date: new Date().toISOString().split('T')[0]
   });
 
   const getStatusColor = (status: InvoiceStatus) => {
@@ -73,31 +79,247 @@ const InvoiceList: React.FC<InvoiceListProps> = ({ invoices, customers, products
     return { subtotal, tax, total: subtotal + tax };
   };
 
-  const handleCreateInvoice = () => {
+  const handleOpenCreateModal = () => {
+    setEditingId(null);
+    setNewInvoice({ 
+        customerId: '', 
+        items: [], 
+        dueDate: '', 
+        date: new Date().toISOString().split('T')[0] 
+    });
+    setIsModalOpen(true);
+  };
+
+  const handleEditInvoice = (invoice: Invoice) => {
+      setEditingId(invoice.id);
+      setNewInvoice({
+          customerId: invoice.customerId,
+          items: invoice.items.map(item => ({...item})), // Deep copy
+          dueDate: invoice.dueDate,
+          date: invoice.date
+      });
+      setIsModalOpen(true);
+      setViewInvoice(null);
+  };
+
+  const handleSaveInvoice = () => {
     if (!newInvoice.customerId) return;
     
     const customer = customers.find(c => c.id === newInvoice.customerId);
     const totals = calculateTotals();
     
-    const invoice: Invoice = {
-        id: `INV-${new Date().getFullYear()}-${Math.floor(Math.random() * 1000)}`,
-        customerId: newInvoice.customerId,
-        customerName: customer?.name || 'Unknown',
-        date: new Date().toISOString().split('T')[0],
-        dueDate: newInvoice.dueDate,
-        items: newInvoice.items as InvoiceItem[],
-        subtotal: totals.subtotal,
-        tax: totals.tax,
-        totalAmount: totals.total,
-        status: InvoiceStatus.DRAFT // Default to draft
-    };
+    if (editingId) {
+        // Update existing invoice
+        setInvoices(prev => prev.map(inv => inv.id === editingId ? {
+            ...inv,
+            customerId: newInvoice.customerId,
+            customerName: customer?.name || 'Unknown',
+            dueDate: newInvoice.dueDate,
+            date: newInvoice.date,
+            items: newInvoice.items as InvoiceItem[],
+            subtotal: totals.subtotal,
+            tax: totals.tax,
+            totalAmount: totals.total
+        } : inv));
+    } else {
+        // Create new invoice
+        const invoice: Invoice = {
+            id: `INV-${new Date().getFullYear()}-${Math.floor(Math.random() * 1000)}`,
+            customerId: newInvoice.customerId,
+            customerName: customer?.name || 'Unknown',
+            date: newInvoice.date,
+            dueDate: newInvoice.dueDate,
+            items: newInvoice.items as InvoiceItem[],
+            subtotal: totals.subtotal,
+            tax: totals.tax,
+            totalAmount: totals.total,
+            status: InvoiceStatus.DRAFT // Default to draft
+        };
+        setInvoices(prev => [invoice, ...prev]);
+    }
 
-    setInvoices(prev => [invoice, ...prev]);
     setIsModalOpen(false);
-    setNewInvoice({ customerId: '', items: [], dueDate: '' });
+    setEditingId(null);
+    setNewInvoice({ customerId: '', items: [], dueDate: '', date: '' });
+  };
+
+  const handleMarkAsPaid = (e: React.MouseEvent, invoice: Invoice) => {
+    e.preventDefault();
+    e.stopPropagation();
+    
+    setInvoices(prev => prev.map(inv => 
+        inv.id === invoice.id ? { ...inv, status: InvoiceStatus.PAID } : inv
+    ));
+    if (viewInvoice?.id === invoice.id) {
+        setViewInvoice(prev => prev ? {...prev, status: InvoiceStatus.PAID} : null);
+    }
+  };
+
+  const handleMarkAsUnpaid = (e: React.MouseEvent, invoice: Invoice) => {
+    e.preventDefault();
+    e.stopPropagation();
+    
+    if (window.confirm(`Are you sure you want to mark Invoice ${invoice.id} as UNPAID?`)) {
+        // Use local date for accurate comparison
+        const today = new Date();
+        const dueDate = new Date(invoice.dueDate);
+        const isOverdue = dueDate < today;
+        const newStatus = isOverdue ? InvoiceStatus.OVERDUE : InvoiceStatus.SENT;
+        
+        setInvoices(prev => prev.map(inv => 
+            inv.id === invoice.id ? { ...inv, status: newStatus } : inv
+        ));
+        if (viewInvoice?.id === invoice.id) {
+            setViewInvoice(prev => prev ? {...prev, status: newStatus} : null);
+        }
+    }
+  };
+
+  const handleDownloadPDF = (invoice: Invoice) => {
+    const printWindow = window.open('', '_blank');
+    if (!printWindow) {
+        alert("Please allow popups to download PDF");
+        return;
+    }
+
+    const customer = customers.find(c => c.id === invoice.customerId);
+
+    const htmlContent = `
+      <!DOCTYPE html>
+      <html>
+        <head>
+          <title>Invoice ${invoice.id}</title>
+          <style>
+            body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; padding: 40px; color: #333; max-width: 800px; margin: 0 auto; }
+            .header { display: flex; justify-content: space-between; margin-bottom: 50px; padding-bottom: 20px; border-bottom: 2px solid #f1f5f9; }
+            .logo { font-size: 24px; font-weight: bold; color: #1e293b; display: flex; align-items: center; gap: 10px; }
+            .invoice-title { text-align: right; }
+            .invoice-title h1 { margin: 0; color: #1e293b; font-size: 32px; letter-spacing: -1px; }
+            .invoice-meta { margin-top: 10px; color: #64748b; font-size: 14px; }
+            .bill-to { margin-bottom: 40px; }
+            .bill-to h3 { color: #94a3b8; font-size: 12px; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 10px; }
+            .bill-to p { margin: 0 0 5px 0; font-size: 14px; }
+            table { width: 100%; border-collapse: collapse; margin-bottom: 40px; }
+            th { text-align: left; border-bottom: 2px solid #f1f5f9; padding: 12px 10px; background: #f8fafc; font-size: 12px; font-weight: bold; color: #64748b; text-transform: uppercase; }
+            td { border-bottom: 1px solid #f1f5f9; padding: 16px 10px; font-size: 14px; }
+            .totals { width: 300px; margin-left: auto; }
+            .totals-row { display: flex; justify-content: space-between; padding: 8px 0; font-size: 14px; color: #64748b; }
+            .total-final { font-weight: bold; font-size: 18px; color: #1e293b; border-top: 2px solid #1e293b; margin-top: 10px; padding-top: 15px; }
+            .footer { margin-top: 80px; text-align: center; color: #94a3b8; font-size: 12px; border-top: 1px solid #f1f5f9; padding-top: 20px; }
+            .status-badge { display: inline-block; padding: 4px 12px; border-radius: 9999px; font-size: 12px; font-weight: bold; text-transform: uppercase; background: #f1f5f9; color: #64748b; margin-top: 10px; }
+            .status-paid { background: #dcfce7; color: #166534; }
+            .status-overdue { background: #fee2e2; color: #991b1b; }
+            @media print {
+                body { padding: 0; }
+                .no-print { display: none; }
+            }
+          </style>
+        </head>
+        <body>
+          <div class="header">
+            <div class="company-info">
+              <div class="logo">
+                <span>AMSI CRM</span>
+              </div>
+              <p style="margin-top: 10px; font-size: 14px; color: #64748b;">
+                123 Security Blvd<br>Tech City, TC 90210<br>support@amsi.com
+              </p>
+            </div>
+            <div class="invoice-title">
+              <h1>INVOICE</h1>
+              <div class="status-badge ${invoice.status === InvoiceStatus.PAID ? 'status-paid' : invoice.status === InvoiceStatus.OVERDUE ? 'status-overdue' : ''}">
+                ${invoice.status}
+              </div>
+              <div class="invoice-meta">
+                <p>Invoice #: ${invoice.id}</p>
+                <p>Date: ${invoice.date}</p>
+                <p>Due Date: ${invoice.dueDate}</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="bill-to">
+            <h3>Bill To</h3>
+            <p><strong>${invoice.customerName}</strong></p>
+            <p>${customer?.address || 'No address on file'}</p>
+            <p>${customer?.email || ''}</p>
+            <p>${customer?.phone || ''}</p>
+          </div>
+
+          <table>
+            <thead>
+              <tr>
+                <th width="50%">Description</th>
+                <th style="text-align: center">Qty</th>
+                <th style="text-align: right">Unit Price</th>
+                <th style="text-align: right">Total</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${invoice.items.map(item => `
+                <tr>
+                  <td>
+                    <strong>${item.productName}</strong>
+                  </td>
+                  <td style="text-align: center">${item.quantity}</td>
+                  <td style="text-align: right">$${item.unitPrice.toFixed(2)}</td>
+                  <td style="text-align: right">$${item.total.toFixed(2)}</td>
+                </tr>
+              `).join('')}
+            </tbody>
+          </table>
+
+          <div class="totals">
+            <div class="totals-row">
+              <span>Subtotal</span>
+              <span>$${invoice.subtotal.toFixed(2)}</span>
+            </div>
+            <div class="totals-row">
+              <span>Tax (8%)</span>
+              <span>$${invoice.tax.toFixed(2)}</span>
+            </div>
+            <div class="totals-row total-final">
+              <span>Total Due</span>
+              <span>$${invoice.totalAmount.toFixed(2)}</span>
+            </div>
+          </div>
+
+          <div class="footer">
+            <p>Thank you for your business!</p>
+            <p>Please make checks payable to AMSI Security Systems Inc.</p>
+            <p>Questions? Contact us at support@amsi.com or (555) 012-3456</p>
+          </div>
+          
+          <script>
+             window.onload = function() { window.print(); }
+          </script>
+        </body>
+      </html>
+    `;
+
+    printWindow.document.write(htmlContent);
+    printWindow.document.close();
+  };
+
+  const handleSendEmail = (invoice: Invoice) => {
+    const customer = customers.find(c => c.id === invoice.customerId);
+    alert(`Invoice ${invoice.id} sent to ${customer?.email || 'customer email'}.`);
+    
+    // Update status to sent if it's draft
+    if (invoice.status === InvoiceStatus.DRAFT) {
+        setInvoices(prev => prev.map(inv => inv.id === invoice.id ? {...inv, status: InvoiceStatus.SENT} : inv));
+        if (viewInvoice?.id === invoice.id) {
+            setViewInvoice(prev => prev ? {...prev, status: InvoiceStatus.SENT} : null);
+        }
+    }
   };
 
   const { subtotal, tax, total } = calculateTotals();
+
+  const filteredInvoices = invoices.filter(inv => 
+    inv.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    inv.customerName.toLowerCase().includes(searchTerm.toLowerCase())
+  );
 
   return (
     <div className="p-8 h-full flex flex-col relative">
@@ -107,7 +329,7 @@ const InvoiceList: React.FC<InvoiceListProps> = ({ invoices, customers, products
           <p className="text-slate-500 mt-1">Billing history and payment status.</p>
         </div>
         <button 
-          onClick={() => setIsModalOpen(true)}
+          onClick={handleOpenCreateModal}
           className="bg-[#FFB600] hover:bg-amber-500 text-slate-900 px-4 py-2 rounded-lg font-bold transition-colors shadow-sm flex items-center gap-2"
         >
           <Plus size={18} /> Create Invoice
@@ -121,6 +343,8 @@ const InvoiceList: React.FC<InvoiceListProps> = ({ invoices, customers, products
             <input 
               type="text" 
               placeholder="Search invoices by ID or customer..." 
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
               className="w-full pl-10 pr-4 py-2 rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-[#FFB600] focus:border-transparent"
             />
           </div>
@@ -140,7 +364,7 @@ const InvoiceList: React.FC<InvoiceListProps> = ({ invoices, customers, products
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
-              {invoices.map((invoice) => (
+              {filteredInvoices.map((invoice) => (
                 <tr key={invoice.id} className="hover:bg-slate-50 transition-colors">
                   <td className="px-6 py-4 font-mono font-medium text-slate-700">{invoice.id}</td>
                   <td className="px-6 py-4 font-medium text-slate-800">{invoice.customerName}</td>
@@ -154,34 +378,217 @@ const InvoiceList: React.FC<InvoiceListProps> = ({ invoices, customers, products
                   </td>
                   <td className="px-6 py-4 text-center">
                     <div className="flex items-center justify-center gap-2">
-                        <button className="text-slate-400 hover:text-blue-600 p-1" title="Download PDF">
+                        <button 
+                            type="button"
+                            onClick={() => setViewInvoice(invoice)}
+                            className="text-slate-400 hover:text-blue-600 p-2 rounded-md hover:bg-blue-50 transition-colors" 
+                            title="View Details"
+                        >
+                            <Eye size={16} />
+                        </button>
+                        {invoice.status !== InvoiceStatus.PAID && (
+                            <button 
+                                type="button"
+                                onClick={() => handleEditInvoice(invoice)}
+                                className="text-slate-400 hover:text-amber-600 p-2 rounded-md hover:bg-amber-50 transition-colors" 
+                                title="Edit Invoice"
+                            >
+                                <Edit size={16} />
+                            </button>
+                        )}
+                        <button 
+                            type="button"
+                            onClick={() => handleDownloadPDF(invoice)}
+                            className="text-slate-400 hover:text-blue-600 p-2 rounded-md hover:bg-blue-50 transition-colors" 
+                            title="Download PDF"
+                        >
                             <Download size={16} />
                         </button>
-                        <button className="text-slate-400 hover:text-blue-600 p-1" title="Send Email">
+                        <button 
+                            type="button"
+                            onClick={() => handleSendEmail(invoice)}
+                            className="text-slate-400 hover:text-blue-600 p-2 rounded-md hover:bg-blue-50 transition-colors" 
+                            title="Send Email"
+                        >
                             <Send size={16} />
                         </button>
+                        {invoice.status !== InvoiceStatus.PAID ? (
+                             <button 
+                                type="button"
+                                onClick={(e) => handleMarkAsPaid(e, invoice)}
+                                className="text-slate-400 hover:text-green-600 p-2 rounded-md hover:bg-green-50 transition-colors" 
+                                title="Mark as Paid"
+                            >
+                                <CheckCircle size={16} />
+                            </button>
+                        ) : (
+                             <button 
+                                type="button"
+                                onClick={(e) => handleMarkAsUnpaid(e, invoice)}
+                                className="text-slate-400 hover:text-red-600 p-2 rounded-md hover:bg-red-50 transition-colors" 
+                                title="Mark as Unpaid"
+                            >
+                                <XCircle size={16} />
+                            </button>
+                        )}
                     </div>
                   </td>
                 </tr>
               ))}
+               {filteredInvoices.length === 0 && (
+                  <tr>
+                      <td colSpan={7} className="text-center py-8 text-slate-500">
+                          No invoices found matching "{searchTerm}"
+                      </td>
+                  </tr>
+              )}
             </tbody>
           </table>
         </div>
       </div>
 
-      {/* Create Invoice Modal */}
+      {/* View Invoice Modal */}
+      {viewInvoice && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+            <div className="bg-white rounded-2xl w-full max-w-3xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
+                <div className="p-6 border-b border-slate-100 flex justify-between items-start bg-slate-50">
+                    <div>
+                        <div className="flex items-center gap-3 mb-1">
+                            <h3 className="text-xl font-bold text-slate-800">Invoice Details</h3>
+                            <span className={`px-2.5 py-0.5 rounded-full text-xs font-medium border ${getStatusColor(viewInvoice.status)}`}>
+                                {viewInvoice.status}
+                            </span>
+                        </div>
+                        <p className="text-sm text-slate-500 font-mono">{viewInvoice.id}</p>
+                    </div>
+                    <button onClick={() => setViewInvoice(null)} className="text-slate-400 hover:text-slate-600">
+                        <X size={24} />
+                    </button>
+                </div>
+
+                <div className="p-8 overflow-y-auto flex-1 bg-white">
+                    <div className="grid grid-cols-2 gap-8 mb-8">
+                        <div>
+                            <p className="text-xs font-bold text-slate-400 uppercase mb-1">Bill To</p>
+                            <p className="text-lg font-bold text-slate-800">{viewInvoice.customerName}</p>
+                            <p className="text-sm text-slate-500 mt-1">
+                                {customers.find(c => c.id === viewInvoice.customerId)?.email}
+                            </p>
+                            <p className="text-sm text-slate-500">
+                                {customers.find(c => c.id === viewInvoice.customerId)?.address}
+                            </p>
+                        </div>
+                        <div className="text-right">
+                             <div className="mb-2">
+                                <p className="text-xs font-bold text-slate-400 uppercase mb-1">Date Issued</p>
+                                <p className="text-slate-800 font-medium">{viewInvoice.date}</p>
+                             </div>
+                             <div>
+                                <p className="text-xs font-bold text-slate-400 uppercase mb-1">Due Date</p>
+                                <p className="text-red-600 font-medium">{viewInvoice.dueDate}</p>
+                             </div>
+                        </div>
+                    </div>
+
+                    <table className="w-full text-left text-sm mb-6">
+                        <thead className="bg-slate-50 text-slate-600 border-b border-slate-200">
+                            <tr>
+                                <th className="px-4 py-3">Item Description</th>
+                                <th className="px-4 py-3 text-center">Qty</th>
+                                <th className="px-4 py-3 text-right">Unit Price</th>
+                                <th className="px-4 py-3 text-right">Total</th>
+                            </tr>
+                        </thead>
+                        <tbody className="divide-y divide-slate-100">
+                            {viewInvoice.items.map((item, idx) => (
+                                <tr key={idx}>
+                                    <td className="px-4 py-3 font-medium text-slate-800">{item.productName}</td>
+                                    <td className="px-4 py-3 text-center">{item.quantity}</td>
+                                    <td className="px-4 py-3 text-right text-slate-600">${item.unitPrice.toFixed(2)}</td>
+                                    <td className="px-4 py-3 text-right font-bold text-slate-800">${item.total.toFixed(2)}</td>
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
+
+                    <div className="flex justify-end">
+                        <div className="w-64 space-y-3">
+                            <div className="flex justify-between text-slate-500 text-sm">
+                                <span>Subtotal</span>
+                                <span>${viewInvoice.subtotal.toFixed(2)}</span>
+                            </div>
+                            <div className="flex justify-between text-slate-500 text-sm">
+                                <span>Tax (8%)</span>
+                                <span>${viewInvoice.tax.toFixed(2)}</span>
+                            </div>
+                            <div className="flex justify-between text-slate-800 font-bold text-lg pt-3 border-t border-slate-200">
+                                <span>Total Due</span>
+                                <span>${viewInvoice.totalAmount.toFixed(2)}</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div className="p-4 border-t border-slate-200 bg-slate-50 flex justify-end gap-3">
+                    <button 
+                        onClick={() => setViewInvoice(null)}
+                        className="px-4 py-2 text-slate-600 font-medium hover:bg-slate-200 rounded-lg transition-colors"
+                    >
+                        Close
+                    </button>
+                    {viewInvoice.status !== InvoiceStatus.PAID ? (
+                         <button 
+                            type="button"
+                            onClick={(e) => handleMarkAsPaid(e, viewInvoice)}
+                            className="px-4 py-2 bg-green-50 border border-green-200 text-green-700 font-bold rounded-lg hover:bg-green-100 transition-colors shadow-sm flex items-center gap-2"
+                        >
+                            <CheckCircle size={16} /> Mark Paid
+                        </button>
+                    ) : (
+                         <button 
+                            type="button"
+                            onClick={(e) => handleMarkAsUnpaid(e, viewInvoice)}
+                            className="px-4 py-2 bg-red-50 border border-red-200 text-red-700 font-bold rounded-lg hover:bg-red-100 transition-colors shadow-sm flex items-center gap-2"
+                        >
+                            <XCircle size={16} /> Mark Unpaid
+                        </button>
+                    )}
+                    {viewInvoice.status !== InvoiceStatus.PAID && (
+                        <button 
+                            type="button"
+                            onClick={() => handleEditInvoice(viewInvoice)}
+                            className="px-4 py-2 bg-white border border-slate-300 text-slate-700 font-bold rounded-lg hover:bg-slate-100 transition-colors shadow-sm flex items-center gap-2"
+                        >
+                            <Edit size={16} /> Edit Invoice
+                        </button>
+                    )}
+                    <button 
+                        type="button"
+                        onClick={() => handleDownloadPDF(viewInvoice)}
+                        className="px-4 py-2 bg-slate-800 text-white font-bold rounded-lg hover:bg-slate-700 transition-colors shadow-sm flex items-center gap-2"
+                    >
+                        <Download size={16} /> Download PDF
+                    </button>
+                </div>
+            </div>
+        </div>
+      )}
+
+      {/* Create/Edit Invoice Modal */}
       {isModalOpen && (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
             <div className="bg-white rounded-2xl w-full max-w-4xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
                 <div className="p-6 border-b border-slate-100 flex justify-between items-center bg-slate-50">
                     <h3 className="text-xl font-bold text-slate-800 flex items-center gap-2">
-                        <FileText className="text-[#FFB600]" /> New Invoice
+                        <FileText className="text-[#FFB600]" /> {editingId ? 'Edit Invoice' : 'New Invoice'}
                     </h3>
-                    <button onClick={() => setIsModalOpen(false)} className="text-slate-400 hover:text-slate-600">✕</button>
+                    <button onClick={() => setIsModalOpen(false)} className="text-slate-400 hover:text-slate-600">
+                        <X size={24} />
+                    </button>
                 </div>
                 
                 <div className="p-8 overflow-y-auto flex-1 bg-slate-50">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
                         <div>
                             <label className="block text-sm font-medium text-slate-700 mb-1">Customer</label>
                             <div className="relative">
@@ -197,12 +604,25 @@ const InvoiceList: React.FC<InvoiceListProps> = ({ invoices, customers, products
                             </div>
                         </div>
                         <div>
+                            <label className="block text-sm font-medium text-slate-700 mb-1">Issue Date</label>
+                            <div className="relative">
+                                <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={16} />
+                                <input 
+                                    type="date" 
+                                    className="w-full pl-10 border border-slate-300 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-[#FFB600] focus:border-[#FFB600] outline-none"
+                                    value={newInvoice.date}
+                                    onChange={(e) => setNewInvoice(prev => ({...prev, date: e.target.value}))}
+                                />
+                            </div>
+                        </div>
+                        <div>
                             <label className="block text-sm font-medium text-slate-700 mb-1">Due Date</label>
                             <div className="relative">
                                 <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={16} />
                                 <input 
                                     type="date" 
                                     className="w-full pl-10 border border-slate-300 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-[#FFB600] focus:border-[#FFB600] outline-none"
+                                    value={newInvoice.dueDate}
                                     onChange={(e) => setNewInvoice(prev => ({...prev, dueDate: e.target.value}))}
                                 />
                             </div>
@@ -306,11 +726,11 @@ const InvoiceList: React.FC<InvoiceListProps> = ({ invoices, customers, products
                         Cancel
                     </button>
                     <button 
-                        onClick={handleCreateInvoice}
+                        onClick={handleSaveInvoice}
                         disabled={!newInvoice.customerId || newInvoice.items.length === 0}
                         className="px-6 py-2 bg-[#FFB600] text-slate-900 font-bold rounded-lg hover:bg-amber-500 transition-colors shadow-sm disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
                     >
-                        <DollarSign size={18} /> Save Invoice
+                        <DollarSign size={18} /> {editingId ? 'Update Invoice' : 'Save Invoice'}
                     </button>
                 </div>
             </div>

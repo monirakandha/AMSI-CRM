@@ -22,6 +22,9 @@ const App: React.FC = () => {
   const [currentUser, setCurrentUser] = useState<Staff | null>(null);
   const [activeTab, setActiveTab] = useState('dashboard');
   
+  // Navigation Params State (for deep linking to customer details)
+  const [navParams, setNavParams] = useState<{ customerId?: string, tab?: string } | null>(null);
+
   // Data State
   const [customers, setCustomers] = useState<Customer[]>(MOCK_CUSTOMERS);
   const [tickets, setTickets] = useState<Ticket[]>(MOCK_TICKETS);
@@ -54,6 +57,11 @@ const App: React.FC = () => {
   const handleLogout = () => {
     setCurrentUser(null);
     setActiveTab('dashboard');
+  };
+
+  const handleNavigateToCustomer = (customerId: string, tab: string = 'overview') => {
+      setNavParams({ customerId, tab });
+      setActiveTab('customers');
   };
 
   // Permission Logic
@@ -105,6 +113,10 @@ const App: React.FC = () => {
             invoices={invoices} 
             quotes={quotes} 
             setTickets={setTickets}
+            currentUser={currentUser}
+            initialCustomerId={navParams?.customerId}
+            initialTab={navParams?.tab}
+            onConsumeNavParams={() => setNavParams(null)}
           />
         );
       case 'tickets':
@@ -120,6 +132,7 @@ const App: React.FC = () => {
             setQuotes={setQuotes} 
             setInvoices={setInvoices}
             setActiveTab={setActiveTab}
+            onNavigateToCustomer={handleNavigateToCustomer}
           />
         );
       case 'invoices':
