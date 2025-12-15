@@ -113,14 +113,15 @@ const App: React.FC = () => {
             invoices={invoices} 
             quotes={quotes} 
             setTickets={setTickets}
-            currentUser={currentUser}
+            currentUser={currentUser!}
+            staff={staff}
             initialCustomerId={navParams?.customerId}
             initialTab={navParams?.tab}
             onConsumeNavParams={() => setNavParams(null)}
           />
         );
       case 'tickets':
-        return <TicketSystem tickets={tickets} customers={customers} setTickets={setTickets} staff={staff} />;
+        return <TicketSystem tickets={tickets} customers={customers} setCustomers={setCustomers} setTickets={setTickets} staff={staff} currentUser={currentUser!} />;
       case 'inventory':
         return <ProductInventory products={products} setProducts={setProducts} />;
       case 'quotes':
@@ -130,17 +131,18 @@ const App: React.FC = () => {
             customers={customers} 
             products={products} 
             setQuotes={setQuotes} 
+            setCustomers={setCustomers}
             setInvoices={setInvoices}
             setActiveTab={setActiveTab}
             onNavigateToCustomer={handleNavigateToCustomer}
           />
         );
       case 'invoices':
-        return <InvoiceList invoices={invoices} customers={customers} products={products} setInvoices={setInvoices} />;
+        return <InvoiceList invoices={invoices} customers={customers} products={products} setInvoices={setInvoices} setCustomers={setCustomers} />;
       case 'subscriptions':
         return <SubscriptionManager subscriptions={subscriptions} customers={customers} setSubscriptions={setSubscriptions} setInvoices={setInvoices} />;
       case 'sales':
-        return <SalesTeam staff={staff} leads={leads} setLeads={setLeads} />;
+        return <SalesTeam staff={staff} leads={leads} setLeads={setLeads} customers={customers} setCustomers={setCustomers} />;
       case 'engineers':
         return <EngineerSection staff={staff} leads={leads} setLeads={setLeads} tickets={tickets} />;
       case 'team':

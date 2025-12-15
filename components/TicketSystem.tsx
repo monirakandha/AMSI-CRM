@@ -1,24 +1,37 @@
 import React, { useState } from 'react';
-import { Ticket, TicketPriority, TicketStatus, Customer, Staff, Role, JobType } from '../types';
+import { Ticket, TicketPriority, TicketStatus, Customer, Staff, Role, JobType, TicketHistoryEntry, AlarmSystem, SystemStatus } from '../types';
 import { analyzeTicketDescription } from '../services/geminiService';
-import { AlertCircle, Clock, CheckCircle, BrainCircuit, Loader2, Wrench, User, Edit2, Save, X, HardHat, Briefcase } from 'lucide-react';
+import { AlertCircle, Clock, CheckCircle, BrainCircuit, Loader2, Wrench, User, Edit2, Save, X, HardHat, Briefcase, History, Calendar, Plus } from 'lucide-react';
 
 interface TicketSystemProps {
   tickets: Ticket[];
   customers: Customer[];
   setTickets: React.Dispatch<React.SetStateAction<Ticket[]>>;
+  setCustomers: React.Dispatch<React.SetStateAction<Customer[]>>;
   staff: Staff[];
+  currentUser: Staff;
 }
 
-const TicketSystem: React.FC<TicketSystemProps> = ({ tickets, customers, setTickets, staff }) => {
+const TicketSystem: React.FC<TicketSystemProps> = ({ tickets, customers, setTickets, setCustomers, staff, currentUser }) => {
   const [isNewModalOpen, setIsNewModalOpen] = useState(false);
   const [editingTicket, setEditingTicket] = useState<Ticket | null>(null);
+  const [activeDetailTab, setActiveDetailTab] = useState<'details' | 'history'>('details');
   
+  // Job Type State
+  const [availableJobTypes, setAvailableJobTypes] = useState<string[]>(Object.values(JobType));
+  const [isAddJobTypeModalOpen, setIsAddJobTypeModalOpen] = useState(false);
+  const [newJobTypeName, setNewJobTypeName] = useState('');
+
+  // System Add State
+  const [isAddSystemModalOpen, setIsAddSystemModalOpen] = useState(false);
+  const [newSystemForm, setNewSystemForm] = useState({ type: '', zones: 8 });
+
   const [newTicket, setNewTicket] = useState<Partial<Ticket>>({
     priority: TicketPriority.LOW,
     status: TicketStatus.OPEN,
     jobType: JobType.SERVICE,
-    assignedTech: ''
+    assignedTech: '',
+    scheduledDate: ''
   });
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [analysisResult, setAnalysisResult] = useState<any>(null);
@@ -62,19 +75,95 @@ const TicketSystem: React.FC<TicketSystemProps> = ({ tickets, customers, setTick
         priority: newTicket.priority || TicketPriority.LOW,
         jobType: newTicket.jobType || JobType.SERVICE,
         assignedTech: newTicket.assignedTech,
+        scheduledDate: newTicket.scheduledDate, // Save the scheduled date
         createdAt: new Date().toISOString(),
-        aiAnalysis: newTicket.aiAnalysis
+        aiAnalysis: newTicket.aiAnalysis,
+        history: [{
+            date: new Date().toISOString(),
+            action: 'Ticket Created',
+            user: currentUser.name,
+            details: 'Initial creation'
+        }]
     } as Ticket;
 
     setTickets(prev => [ticket, ...prev]);
     setIsNewModalOpen(false);
-    setNewTicket({ priority: TicketPriority.LOW, status: TicketStatus.OPEN, jobType: JobType.SERVICE, assignedTech: '' });
+    setNewTicket({ priority: TicketPriority.LOW, status: TicketStatus.OPEN, jobType: JobType.SERVICE, assignedTech: '', scheduledDate: '' });
     setAnalysisResult(null);
+  };
+
+  const handleAddJobType = () => {
+      if (!newJobTypeName.trim()) return;
+      
+      const formattedName = newJobTypeName.trim();
+      if (!availableJobTypes.includes(formattedName)) {
+          setAvailableJobTypes(prev => [...prev, formattedName]);
+      }
+      
+      // Auto select the new type
+      setNewTicket(prev => ({ ...prev, jobType: formattedName as JobType }));
+      setNewJobTypeName('');
+      setIsAddJobTypeModalOpen(false);
+  };
+
+  const handleAddSystem = () => {
+      if (!newTicket.customerId || !newSystemForm.type) return;
+      
+      const newSystem: AlarmSystem = {
+          id: `SYS-${Math.floor(Math.random() * 10000)}`,
+          type: newSystemForm.type,
+          installDate: new Date().toISOString().split('T')[0],
+          lastServiceDate: new Date().toISOString().split('T')[0],
+          status: SystemStatus.DISARMED,
+          zones: Number(newSystemForm.zones)
+      };
+
+      setCustomers(prev => prev.map(c => {
+          if (c.id === newTicket.customerId) {
+              return { ...c, systems: [...c.systems, newSystem] };
+          }
+          return c;
+      }));
+
+      // Update the new ticket to select this new system
+      setNewTicket(prev => ({ ...prev, systemId: newSystem.id }));
+      setIsAddSystemModalOpen(false);
+      setNewSystemForm({ type: '', zones: 8 });
   };
 
   const handleUpdateTicket = () => {
       if (!editingTicket) return;
-      setTickets(prev => prev.map(t => t.id === editingTicket.id ? editingTicket : t));
+      
+      const originalTicket = tickets.find(t => t.id === editingTicket.id);
+      const newHistory: TicketHistoryEntry[] = [...(originalTicket?.history || [])];
+      
+      const changes: string[] = [];
+      if (originalTicket) {
+          if (originalTicket.status !== editingTicket.status) changes.push(`Status: ${originalTicket.status} -> ${editingTicket.status}`);
+          if (originalTicket.priority !== editingTicket.priority) changes.push(`Priority: ${originalTicket.priority} -> ${editingTicket.priority}`);
+          if (originalTicket.assignedTech !== editingTicket.assignedTech) changes.push(`Tech: ${originalTicket.assignedTech || 'None'} -> ${editingTicket.assignedTech || 'None'}`);
+          if (originalTicket.scheduledDate !== editingTicket.scheduledDate) changes.push(`Schedule: ${originalTicket.scheduledDate || 'None'} -> ${editingTicket.scheduledDate || 'None'}`);
+      }
+      
+      if (changes.length > 0) {
+          newHistory.unshift({
+              date: new Date().toISOString(),
+              action: 'Ticket Updated',
+              user: currentUser.name,
+              details: changes.join(', ')
+          });
+      } else {
+           newHistory.unshift({
+              date: new Date().toISOString(),
+              action: 'Details Updated',
+              user: currentUser.name,
+              details: 'Description or Title updated'
+          });
+      }
+
+      const updatedTicket = { ...editingTicket, history: newHistory };
+      
+      setTickets(prev => prev.map(t => t.id === updatedTicket.id ? updatedTicket : t));
       setEditingTicket(null);
   };
 
@@ -85,6 +174,19 @@ const TicketSystem: React.FC<TicketSystemProps> = ({ tickets, customers, setTick
         case TicketPriority.MEDIUM: return 'bg-yellow-100 text-yellow-800 border-yellow-200';
         case TicketPriority.LOW: return 'bg-green-100 text-green-800 border-green-200';
     }
+  };
+
+  // Helper to format date for input
+  const formatDateForInput = (dateString?: string) => {
+    if (!dateString) return '';
+    const date = new Date(dateString);
+    // Handle invalid dates
+    if (isNaN(date.getTime())) return '';
+    
+    // Adjust to local time string format YYYY-MM-DDTHH:mm for input
+    const offset = date.getTimezoneOffset() * 60000;
+    const localISOTime = (new Date(date.getTime() - offset)).toISOString().slice(0, 16);
+    return localISOTime;
   };
 
   return (
@@ -120,7 +222,7 @@ const TicketSystem: React.FC<TicketSystemProps> = ({ tickets, customers, setTick
                         return (
                             <div 
                                 key={ticket.id} 
-                                onClick={() => setEditingTicket(ticket)}
+                                onClick={() => { setEditingTicket(ticket); setActiveDetailTab('details'); }}
                                 className="bg-white p-4 rounded-lg shadow-sm border border-slate-200 hover:shadow-md transition-shadow cursor-pointer group hover:border-[#FFB600]"
                             >
                                 <div className="flex justify-between items-start mb-2">
@@ -146,6 +248,13 @@ const TicketSystem: React.FC<TicketSystemProps> = ({ tickets, customers, setTick
                                             <span className="text-xs font-bold">AI Suggestion</span>
                                         </div>
                                         <p className="text-xs text-slate-700 leading-snug">{ticket.aiAnalysis.suggestedAction}</p>
+                                    </div>
+                                )}
+
+                                {ticket.scheduledDate && (
+                                    <div className="flex items-center gap-1.5 text-xs text-slate-500 mb-3 bg-slate-50 p-1.5 rounded">
+                                        <Calendar size={12} />
+                                        <span>{new Date(ticket.scheduledDate).toLocaleString([], { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}</span>
                                     </div>
                                 )}
 
@@ -194,7 +303,19 @@ const TicketSystem: React.FC<TicketSystemProps> = ({ tickets, customers, setTick
                             </select>
                         </div>
                         <div>
-                            <label className="block text-sm font-medium text-slate-700 mb-1">System</label>
+                            <div className="flex justify-between items-center mb-1">
+                                <label className="block text-sm font-medium text-slate-700">System</label>
+                                <button 
+                                    onClick={(e) => { 
+                                        e.preventDefault(); 
+                                        if(!newTicket.customerId) { alert('Please select a customer first'); return; }
+                                        setIsAddSystemModalOpen(true); 
+                                    }}
+                                    className="text-xs text-blue-600 hover:text-blue-800 font-medium flex items-center gap-1 bg-blue-50 px-2 py-0.5 rounded"
+                                >
+                                    <Plus size={10} /> Add
+                                </button>
+                            </div>
                             <select 
                                 className="w-full border border-slate-300 rounded-lg p-2 text-sm focus:ring-2 focus:ring-[#FFB600] focus:border-[#FFB600] outline-none"
                                 value={newTicket.systemId}
@@ -209,16 +330,24 @@ const TicketSystem: React.FC<TicketSystemProps> = ({ tickets, customers, setTick
                             </select>
                         </div>
                     </div>
-
+                    
                     <div className="grid grid-cols-2 gap-4">
                         <div>
-                            <label className="block text-sm font-medium text-slate-700 mb-1">Job Type</label>
+                            <div className="flex justify-between items-center mb-1">
+                                <label className="block text-sm font-medium text-slate-700">Job Type</label>
+                                <button 
+                                    onClick={(e) => { e.preventDefault(); setIsAddJobTypeModalOpen(true); }}
+                                    className="text-xs text-blue-600 hover:text-blue-800 font-medium flex items-center gap-1 bg-blue-50 px-2 py-0.5 rounded"
+                                >
+                                    <Plus size={10} /> Add
+                                </button>
+                            </div>
                             <select 
                                 className="w-full border border-slate-300 rounded-lg p-2 text-sm focus:ring-2 focus:ring-[#FFB600] focus:border-[#FFB600] outline-none"
                                 value={newTicket.jobType}
                                 onChange={(e) => setNewTicket(prev => ({...prev, jobType: e.target.value as JobType}))}
                             >
-                                {Object.values(JobType).map(t => <option key={t} value={t}>{t}</option>)}
+                                {availableJobTypes.map(t => <option key={t} value={t}>{t}</option>)}
                             </select>
                         </div>
                         <div>
@@ -232,29 +361,36 @@ const TicketSystem: React.FC<TicketSystemProps> = ({ tickets, customers, setTick
                             </select>
                         </div>
                     </div>
-
-                    <div>
-                        <label className="block text-sm font-medium text-slate-700 mb-1">Assign Technician (Optional)</label>
-                        <select 
-                            className="w-full border border-slate-300 rounded-lg p-2 text-sm focus:ring-2 focus:ring-[#FFB600] focus:border-[#FFB600] outline-none"
-                            value={newTicket.assignedTech || ''}
-                            onChange={(e) => {
-                                const newTech = e.target.value;
-                                setNewTicket(prev => ({
-                                    ...prev, 
-                                    assignedTech: newTech,
-                                    status: newTech ? TicketStatus.ASSIGNED : TicketStatus.OPEN
-                                }));
-                            }}
-                        >
-                            <option value="">-- Unassigned --</option>
-                            {technicalStaff.map(s => (
-                                <option key={s.id} value={s.id}>{s.name} ({s.role})</option>
-                            ))}
-                        </select>
-                        <p className="text-xs text-slate-500 mt-1">If assigned, ticket status will be set to 'Assigned'.</p>
+                    <div className="grid grid-cols-2 gap-4">
+                        <div>
+                            <label className="block text-sm font-medium text-slate-700 mb-1">Assign Technician</label>
+                            <select 
+                                className="w-full border border-slate-300 rounded-lg p-2 text-sm focus:ring-2 focus:ring-[#FFB600] focus:border-[#FFB600] outline-none"
+                                value={newTicket.assignedTech || ''}
+                                onChange={(e) => {
+                                    const newTech = e.target.value;
+                                    setNewTicket(prev => ({
+                                        ...prev, 
+                                        assignedTech: newTech,
+                                        status: newTech ? TicketStatus.ASSIGNED : TicketStatus.OPEN
+                                    }));
+                                }}
+                            >
+                                <option value="">-- Unassigned --</option>
+                                {technicalStaff.map(s => (
+                                    <option key={s.id} value={s.id}>{s.name} ({s.role})</option>
+                                ))}
+                            </select>
+                        </div>
+                        <div>
+                            <label className="block text-sm font-medium text-slate-700 mb-1">Schedule Date</label>
+                            <input 
+                                type="datetime-local" 
+                                className="w-full border border-slate-300 rounded-lg p-2 text-sm focus:ring-2 focus:ring-[#FFB600] focus:border-[#FFB600] outline-none"
+                                onChange={(e) => setNewTicket(prev => ({...prev, scheduledDate: e.target.value}))}
+                            />
+                        </div>
                     </div>
-
                     <div>
                         <label className="block text-sm font-medium text-slate-700 mb-1">Issue Title</label>
                         <input 
@@ -264,7 +400,6 @@ const TicketSystem: React.FC<TicketSystemProps> = ({ tickets, customers, setTick
                             onChange={(e) => setNewTicket(prev => ({...prev, title: e.target.value}))}
                         />
                     </div>
-
                     <div>
                         <div className="flex justify-between items-center mb-1">
                             <label className="block text-sm font-medium text-slate-700">Detailed Description</label>
@@ -283,8 +418,7 @@ const TicketSystem: React.FC<TicketSystemProps> = ({ tickets, customers, setTick
                             onChange={(e) => setNewTicket(prev => ({...prev, description: e.target.value}))}
                         />
                     </div>
-
-                    {/* AI Results Section */}
+                     {/* AI Results Section */}
                     {analysisResult && (
                         <div className="bg-blue-50 rounded-lg p-4 border border-blue-100 space-y-3 animate-fade-in">
                             <div className="flex items-center gap-2 mb-2">
@@ -304,45 +438,99 @@ const TicketSystem: React.FC<TicketSystemProps> = ({ tickets, customers, setTick
                                     <p className="text-sm font-bold text-slate-800">{analysisResult.estimatedTime}</p>
                                 </div>
                             </div>
-
                             <div className="bg-white p-3 rounded border border-blue-100">
                                 <p className="text-xs text-slate-500 mb-1">Recommended Action</p>
                                 <p className="text-sm text-slate-800">{analysisResult.suggestedAction}</p>
                             </div>
-                            
-                            {analysisResult.requiredParts && analysisResult.requiredParts.length > 0 && (
-                                <div>
-                                    <p className="text-xs text-slate-500 mb-1">Possible Parts Needed</p>
-                                    <div className="flex flex-wrap gap-1">
-                                        {analysisResult.requiredParts.map((part: string, idx: number) => (
-                                            <span key={idx} className="bg-white border border-slate-200 text-slate-600 px-2 py-0.5 rounded text-xs">
-                                                {part}
-                                            </span>
-                                        ))}
-                                    </div>
-                                </div>
-                            )}
                         </div>
                     )}
                 </div>
 
                 <div className="p-4 border-t border-slate-200 bg-slate-50 flex justify-end gap-3">
-                    <button 
-                        onClick={() => setIsNewModalOpen(false)}
-                        className="px-4 py-2 text-slate-600 font-medium hover:bg-slate-200 rounded-lg transition-colors"
-                    >
-                        Cancel
-                    </button>
-                    <button 
-                        onClick={handleCreateTicket}
-                        disabled={!newTicket.title || !newTicket.customerId}
-                        className="px-4 py-2 bg-[#FFB600] text-slate-900 font-bold rounded-lg hover:bg-amber-500 transition-colors shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
-                    >
-                        Create Ticket
-                    </button>
+                    <button onClick={() => setIsNewModalOpen(false)} className="px-4 py-2 text-slate-600 font-medium hover:bg-slate-200 rounded-lg transition-colors">Cancel</button>
+                    <button onClick={handleCreateTicket} disabled={!newTicket.title || !newTicket.customerId} className="px-4 py-2 bg-[#FFB600] text-slate-900 font-bold rounded-lg hover:bg-amber-500 transition-colors shadow-sm disabled:opacity-50 disabled:cursor-not-allowed">Create Ticket</button>
                 </div>
             </div>
         </div>
+      )}
+
+      {/* Add Custom Job Type Modal */}
+      {isAddJobTypeModalOpen && (
+          <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[60] flex items-center justify-center p-4">
+              <div className="bg-white rounded-xl w-full max-w-sm shadow-2xl p-6 flex flex-col">
+                  <h3 className="text-lg font-bold text-slate-800 mb-4">Add New Job Type</h3>
+                  <input 
+                      type="text" 
+                      className="w-full border border-slate-300 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-[#FFB600] focus:border-[#FFB600] outline-none mb-4"
+                      placeholder="e.g. Emergency Callout"
+                      value={newJobTypeName}
+                      onChange={(e) => setNewJobTypeName(e.target.value)}
+                      autoFocus
+                  />
+                  <div className="flex justify-end gap-2">
+                      <button 
+                          onClick={() => { setIsAddJobTypeModalOpen(false); setNewJobTypeName(''); }}
+                          className="px-3 py-2 text-slate-600 font-medium hover:bg-slate-100 rounded-lg transition-colors text-sm"
+                      >
+                          Cancel
+                      </button>
+                      <button 
+                          onClick={handleAddJobType}
+                          disabled={!newJobTypeName.trim()}
+                          className="px-4 py-2 bg-[#FFB600] text-slate-900 font-bold rounded-lg hover:bg-amber-500 transition-colors shadow-sm text-sm disabled:opacity-50"
+                      >
+                          Add Type
+                      </button>
+                  </div>
+              </div>
+          </div>
+      )}
+
+      {/* Add Custom System Modal */}
+      {isAddSystemModalOpen && (
+          <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[60] flex items-center justify-center p-4">
+              <div className="bg-white rounded-xl w-full max-w-sm shadow-2xl p-6 flex flex-col">
+                  <h3 className="text-lg font-bold text-slate-800 mb-4">Add New System</h3>
+                  <div className="space-y-4 mb-4">
+                      <div>
+                          <label className="block text-xs font-bold text-slate-500 uppercase mb-1">System Type</label>
+                          <input 
+                              type="text" 
+                              className="w-full border border-slate-300 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-[#FFB600] focus:border-[#FFB600] outline-none"
+                              placeholder="e.g. Honeywell Vista 20P"
+                              value={newSystemForm.type}
+                              onChange={(e) => setNewSystemForm(prev => ({...prev, type: e.target.value}))}
+                              autoFocus
+                          />
+                      </div>
+                      <div>
+                          <label className="block text-xs font-bold text-slate-500 uppercase mb-1">Number of Zones</label>
+                          <input 
+                              type="number" 
+                              className="w-full border border-slate-300 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-[#FFB600] focus:border-[#FFB600] outline-none"
+                              placeholder="8"
+                              value={newSystemForm.zones}
+                              onChange={(e) => setNewSystemForm(prev => ({...prev, zones: Number(e.target.value)}))}
+                          />
+                      </div>
+                  </div>
+                  <div className="flex justify-end gap-2">
+                      <button 
+                          onClick={() => { setIsAddSystemModalOpen(false); setNewSystemForm({ type: '', zones: 8 }); }}
+                          className="px-3 py-2 text-slate-600 font-medium hover:bg-slate-100 rounded-lg transition-colors text-sm"
+                      >
+                          Cancel
+                      </button>
+                      <button 
+                          onClick={handleAddSystem}
+                          disabled={!newSystemForm.type.trim()}
+                          className="px-4 py-2 bg-[#FFB600] text-slate-900 font-bold rounded-lg hover:bg-amber-500 transition-colors shadow-sm text-sm disabled:opacity-50"
+                      >
+                          Add System
+                      </button>
+                  </div>
+              </div>
+          </div>
       )}
 
       {/* Edit Ticket Modal */}
@@ -361,100 +549,171 @@ const TicketSystem: React.FC<TicketSystemProps> = ({ tickets, customers, setTick
                     </button>
                 </div>
 
+                {/* Modal Tabs */}
+                <div className="flex border-b border-slate-200 bg-white px-6">
+                    <button 
+                        onClick={() => setActiveDetailTab('details')}
+                        className={`px-4 py-3 text-sm font-medium border-b-2 transition-colors ${activeDetailTab === 'details' ? 'border-[#FFB600] text-[#FFB600]' : 'border-transparent text-slate-500 hover:text-slate-700'}`}
+                    >
+                        Ticket Details
+                    </button>
+                    <button 
+                        onClick={() => setActiveDetailTab('history')}
+                        className={`px-4 py-3 text-sm font-medium border-b-2 transition-colors flex items-center gap-2 ${activeDetailTab === 'history' ? 'border-[#FFB600] text-[#FFB600]' : 'border-transparent text-slate-500 hover:text-slate-700'}`}
+                    >
+                        <History size={14} /> Audit History
+                    </button>
+                </div>
+
                 <div className="p-6 overflow-y-auto space-y-6">
-                    <div>
-                        <label className="block text-sm font-medium text-slate-700 mb-1">Issue Title</label>
-                        <input 
-                            type="text" 
-                            className="w-full border border-slate-300 rounded-lg p-2 text-sm focus:ring-2 focus:ring-[#FFB600] focus:border-[#FFB600] outline-none font-bold text-slate-800"
-                            value={editingTicket.title}
-                            onChange={(e) => setEditingTicket({...editingTicket, title: e.target.value})}
-                        />
-                    </div>
+                    {activeDetailTab === 'details' ? (
+                        <>
+                            <div>
+                                <label className="block text-sm font-medium text-slate-700 mb-1">Issue Title</label>
+                                <input 
+                                    type="text" 
+                                    className="w-full border border-slate-300 rounded-lg p-2 text-sm focus:ring-2 focus:ring-[#FFB600] focus:border-[#FFB600] outline-none font-bold text-slate-800"
+                                    value={editingTicket.title}
+                                    onChange={(e) => setEditingTicket({...editingTicket, title: e.target.value})}
+                                />
+                            </div>
 
-                    <div className="grid grid-cols-3 gap-4">
-                        <div>
-                            <label className="block text-sm font-medium text-slate-700 mb-1">Status</label>
-                            <select 
-                                className="w-full border border-slate-300 rounded-lg p-2 text-sm focus:ring-2 focus:ring-[#FFB600] focus:border-[#FFB600] outline-none"
-                                value={editingTicket.status}
-                                onChange={(e) => setEditingTicket({...editingTicket, status: e.target.value as TicketStatus})}
-                            >
-                                {Object.values(TicketStatus).map(s => <option key={s} value={s}>{s}</option>)}
-                            </select>
-                        </div>
-                        <div>
-                            <label className="block text-sm font-medium text-slate-700 mb-1">Priority</label>
-                            <select 
-                                className="w-full border border-slate-300 rounded-lg p-2 text-sm focus:ring-2 focus:ring-[#FFB600] focus:border-[#FFB600] outline-none"
-                                value={editingTicket.priority}
-                                onChange={(e) => setEditingTicket({...editingTicket, priority: e.target.value as TicketPriority})}
-                            >
-                                {Object.values(TicketPriority).map(p => <option key={p} value={p}>{p}</option>)}
-                            </select>
-                        </div>
-                        <div>
-                            <label className="block text-sm font-medium text-slate-700 mb-1">Job Type</label>
-                            <select 
-                                className="w-full border border-slate-300 rounded-lg p-2 text-sm focus:ring-2 focus:ring-[#FFB600] focus:border-[#FFB600] outline-none"
-                                value={editingTicket.jobType || JobType.SERVICE}
-                                onChange={(e) => setEditingTicket({...editingTicket, jobType: e.target.value as JobType})}
-                            >
-                                {Object.values(JobType).map(t => <option key={t} value={t}>{t}</option>)}
-                            </select>
-                        </div>
-                    </div>
+                            <div className="grid grid-cols-2 gap-4">
+                                <div>
+                                    <label className="block text-sm font-medium text-slate-700 mb-1">Status</label>
+                                    <select 
+                                        className="w-full border border-slate-300 rounded-lg p-2 text-sm focus:ring-2 focus:ring-[#FFB600] focus:border-[#FFB600] outline-none"
+                                        value={editingTicket.status}
+                                        onChange={(e) => setEditingTicket({...editingTicket, status: e.target.value as TicketStatus})}
+                                    >
+                                        {Object.values(TicketStatus).map(s => <option key={s} value={s}>{s}</option>)}
+                                    </select>
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium text-slate-700 mb-1">Priority</label>
+                                    <select 
+                                        className="w-full border border-slate-300 rounded-lg p-2 text-sm focus:ring-2 focus:ring-[#FFB600] focus:border-[#FFB600] outline-none"
+                                        value={editingTicket.priority}
+                                        onChange={(e) => setEditingTicket({...editingTicket, priority: e.target.value as TicketPriority})}
+                                    >
+                                        {Object.values(TicketPriority).map(p => <option key={p} value={p}>{p}</option>)}
+                                    </select>
+                                </div>
+                            </div>
+                            
+                            <div className="grid grid-cols-2 gap-4">
+                                <div>
+                                    <label className="block text-sm font-medium text-slate-700 mb-1">Job Type</label>
+                                    <select 
+                                        className="w-full border border-slate-300 rounded-lg p-2 text-sm focus:ring-2 focus:ring-[#FFB600] focus:border-[#FFB600] outline-none"
+                                        value={editingTicket.jobType || JobType.SERVICE}
+                                        onChange={(e) => setEditingTicket({...editingTicket, jobType: e.target.value as JobType})}
+                                    >
+                                        {availableJobTypes.map(t => <option key={t} value={t}>{t}</option>)}
+                                    </select>
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium text-slate-700 mb-1">Schedule Date</label>
+                                    <input 
+                                        type="datetime-local" 
+                                        className="w-full border border-slate-300 rounded-lg p-2 text-sm focus:ring-2 focus:ring-[#FFB600] focus:border-[#FFB600] outline-none"
+                                        value={formatDateForInput(editingTicket.scheduledDate)}
+                                        onChange={(e) => setEditingTicket({...editingTicket, scheduledDate: e.target.value})}
+                                    />
+                                </div>
+                            </div>
 
-                    <div className="bg-purple-50 p-4 rounded-lg border border-purple-100">
-                        <label className="block text-sm font-bold text-purple-900 mb-2 flex items-center gap-2">
-                            <Wrench size={16} /> Assign Technician
-                        </label>
-                        <select 
-                            className="w-full border border-purple-200 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-purple-500 outline-none bg-white"
-                            value={editingTicket.assignedTech || ''}
-                            onChange={(e) => {
-                                const newTech = e.target.value;
-                                setEditingTicket({
-                                    ...editingTicket, 
-                                    assignedTech: newTech,
-                                    status: newTech && editingTicket.status === TicketStatus.OPEN ? TicketStatus.ASSIGNED : editingTicket.status
-                                });
-                            }}
+                            <div className="bg-purple-50 p-4 rounded-lg border border-purple-100">
+                                <label className="block text-sm font-bold text-purple-900 mb-2 flex items-center gap-2">
+                                    <Wrench size={16} /> Assign Technician
+                                </label>
+                                <select 
+                                    className="w-full border border-purple-200 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-purple-500 outline-none bg-white"
+                                    value={editingTicket.assignedTech || ''}
+                                    onChange={(e) => {
+                                        const newTech = e.target.value;
+                                        setEditingTicket({
+                                            ...editingTicket, 
+                                            assignedTech: newTech,
+                                            status: newTech && editingTicket.status === TicketStatus.OPEN ? TicketStatus.ASSIGNED : editingTicket.status
+                                        });
+                                    }}
+                                >
+                                    <option value="">-- Unassigned --</option>
+                                    {technicalStaff.map(s => (
+                                        <option key={s.id} value={s.id}>{s.name} ({s.role})</option>
+                                    ))}
+                                </select>
+                                <p className="text-xs text-purple-600 mt-2">
+                                    Assigning a technician will automatically set status to 'Assigned' if currently 'Open'.
+                                </p>
+                            </div>
+
+                            <div>
+                                <label className="block text-sm font-medium text-slate-700 mb-1">Description</label>
+                                <textarea 
+                                    className="w-full border border-slate-300 rounded-lg p-3 text-sm h-32 focus:ring-2 focus:ring-[#FFB600] focus:border-[#FFB600] outline-none resize-none"
+                                    value={editingTicket.description}
+                                    onChange={(e) => setEditingTicket({...editingTicket, description: e.target.value})}
+                                />
+                            </div>
+                        </>
+                    ) : (
+                        <div className="relative pl-4 border-l-2 border-slate-200 space-y-8">
+                            {editingTicket.history && editingTicket.history.length > 0 ? (
+                                editingTicket.history.map((entry, idx) => (
+                                    <div key={idx} className="relative">
+                                        <div className="absolute -left-[21px] top-1 w-3 h-3 bg-slate-300 rounded-full border-2 border-white"></div>
+                                        <div className="flex justify-between items-start">
+                                            <div>
+                                                <p className="text-sm font-bold text-slate-800">{entry.action}</p>
+                                                <p className="text-xs text-slate-500 mt-1">{entry.details}</p>
+                                            </div>
+                                            <div className="text-right">
+                                                <p className="text-xs font-mono text-slate-400">{new Date(entry.date).toLocaleDateString()}</p>
+                                                <p className="text-[10px] text-slate-400">{new Date(entry.date).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</p>
+                                            </div>
+                                        </div>
+                                        <div className="mt-2 flex items-center gap-1.5 text-xs text-slate-600 bg-slate-50 inline-block px-2 py-1 rounded">
+                                            <User size={12} className="text-slate-400" /> {entry.user}
+                                        </div>
+                                    </div>
+                                ))
+                            ) : (
+                                <div className="text-center text-slate-400 italic py-8">
+                                    No history recorded for this ticket.
+                                </div>
+                            )}
+                        </div>
+                    )}
+                </div>
+
+                {activeDetailTab === 'details' && (
+                    <div className="p-4 border-t border-slate-200 bg-slate-50 flex justify-end gap-3">
+                        <button 
+                            onClick={() => setEditingTicket(null)}
+                            className="px-4 py-2 text-slate-600 font-medium hover:bg-slate-200 rounded-lg transition-colors"
                         >
-                            <option value="">-- Unassigned --</option>
-                            {technicalStaff.map(s => (
-                                <option key={s.id} value={s.id}>{s.name} ({s.role})</option>
-                            ))}
-                        </select>
-                        <p className="text-xs text-purple-600 mt-2">
-                            Assigning a technician will automatically set status to 'Assigned' if currently 'Open'.
-                        </p>
+                            Cancel
+                        </button>
+                        <button 
+                            onClick={handleUpdateTicket}
+                            className="px-6 py-2 bg-[#FFB600] text-slate-900 font-bold rounded-lg hover:bg-amber-500 transition-colors shadow-sm flex items-center gap-2"
+                        >
+                            <Save size={18} /> Save Changes
+                        </button>
                     </div>
-
-                    <div>
-                        <label className="block text-sm font-medium text-slate-700 mb-1">Description</label>
-                        <textarea 
-                            className="w-full border border-slate-300 rounded-lg p-3 text-sm h-32 focus:ring-2 focus:ring-[#FFB600] focus:border-[#FFB600] outline-none resize-none"
-                            value={editingTicket.description}
-                            onChange={(e) => setEditingTicket({...editingTicket, description: e.target.value})}
-                        />
+                )}
+                 {activeDetailTab === 'history' && (
+                    <div className="p-4 border-t border-slate-200 bg-slate-50 flex justify-end gap-3">
+                         <button 
+                            onClick={() => setEditingTicket(null)}
+                            className="px-4 py-2 text-slate-600 font-medium hover:bg-slate-200 rounded-lg transition-colors"
+                        >
+                            Close
+                        </button>
                     </div>
-                </div>
-
-                <div className="p-4 border-t border-slate-200 bg-slate-50 flex justify-end gap-3">
-                    <button 
-                        onClick={() => setEditingTicket(null)}
-                        className="px-4 py-2 text-slate-600 font-medium hover:bg-slate-200 rounded-lg transition-colors"
-                    >
-                        Cancel
-                    </button>
-                    <button 
-                        onClick={handleUpdateTicket}
-                        className="px-6 py-2 bg-[#FFB600] text-slate-900 font-bold rounded-lg hover:bg-amber-500 transition-colors shadow-sm flex items-center gap-2"
-                    >
-                        <Save size={18} /> Save Changes
-                    </button>
-                </div>
+                )}
             </div>
         </div>
       )}

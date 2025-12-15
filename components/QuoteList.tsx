@@ -1,23 +1,30 @@
 import React, { useState } from 'react';
 import { Quote, QuoteStatus, Customer, Product, InvoiceItem, Invoice, InvoiceStatus } from '../types';
-import { Search, FileBarChart, Plus, Calendar, User, Trash2, DollarSign, Send, CheckCircle, XCircle, FileCheck, AlertCircle, Eye, Edit, X } from 'lucide-react';
+import { Search, FileBarChart, Plus, Calendar, User, Trash2, DollarSign, Send, CheckCircle, XCircle, FileCheck, AlertCircle, Eye, Edit, X, UserPlus, Save, AlertTriangle } from 'lucide-react';
 
 interface QuoteListProps {
   quotes: Quote[];
   customers: Customer[];
   products: Product[];
   setQuotes: React.Dispatch<React.SetStateAction<Quote[]>>;
+  setCustomers: React.Dispatch<React.SetStateAction<Customer[]>>;
   setInvoices: React.Dispatch<React.SetStateAction<Invoice[]>>;
   setActiveTab: (tab: string) => void;
   onNavigateToCustomer?: (customerId: string, tab: string) => void;
 }
 
-const QuoteList: React.FC<QuoteListProps> = ({ quotes, customers, products, setQuotes, setInvoices, setActiveTab, onNavigateToCustomer }) => {
+const QuoteList: React.FC<QuoteListProps> = ({ quotes, customers, products, setQuotes, setCustomers, setInvoices, setActiveTab, onNavigateToCustomer }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isAddCustomerModalOpen, setIsAddCustomerModalOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [viewQuote, setViewQuote] = useState<Quote | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
 
+  // Rejection Modal State
+  const [rejectingQuote, setRejectingQuote] = useState<Quote | null>(null);
+  const [rejectionReason, setRejectionReason] = useState('');
+
+  // New Quote State
   const [newQuote, setNewQuote] = useState<{
     customerId: string;
     items: Partial<InvoiceItem>[];
@@ -28,6 +35,14 @@ const QuoteList: React.FC<QuoteListProps> = ({ quotes, customers, products, setQ
     items: [],
     expiryDate: '',
     notes: ''
+  });
+
+  // Quick Add Customer State
+  const [newCustomerForm, setNewCustomerForm] = useState({
+      name: '',
+      email: '',
+      phone: '',
+      address: ''
   });
 
   const getStatusColor = (status: QuoteStatus) => {
@@ -81,7 +96,11 @@ const QuoteList: React.FC<QuoteListProps> = ({ quotes, customers, products, setQ
     return { subtotal, tax, total: subtotal + tax };
   };
 
-  const handleOpenCreateModal = () => {
+  const handleOpenCreateModal = (e?: React.MouseEvent) => {
+      if (e) {
+          e.preventDefault();
+          e.stopPropagation();
+      }
       setEditingId(null);
       setNewQuote({ customerId: '', items: [], expiryDate: '', notes: '' });
       setIsModalOpen(true);
@@ -142,65 +161,115 @@ const QuoteList: React.FC<QuoteListProps> = ({ quotes, customers, products, setQ
     setEditingId(null);
   };
 
+  const handleSaveNewCustomer = (e: React.MouseEvent) => {
+      e.preventDefault();
+      if (!newCustomerForm.name) return;
+
+      const newId = `CUST-${Math.floor(Math.random() * 10000)}`;
+      const newCustomer: Customer = {
+          id: newId,
+          name: newCustomerForm.name,
+          email: newCustomerForm.email,
+          phone: newCustomerForm.phone,
+          address: newCustomerForm.address,
+          contractValue: 0,
+          systems: [],
+          notes: '',
+          noteHistory: []
+      };
+
+      setCustomers(prev => [...prev, newCustomer]);
+      setNewQuote(prev => ({ ...prev, customerId: newId })); // Auto-select new customer
+      setIsAddCustomerModalOpen(false);
+      setNewCustomerForm({ name: '', email: '', phone: '', address: '' });
+  };
+
   const handleApproveQuote = (e: React.MouseEvent, quote: Quote) => {
       e.stopPropagation();
-      if (confirm(`Mark quote ${quote.id} as Accepted?`)) {
-          setQuotes(prev => prev.map(q => q.id === quote.id ? { ...q, status: QuoteStatus.ACCEPTED } : q));
-          if (viewQuote?.id === quote.id) setViewQuote(prev => prev ? {...prev, status: QuoteStatus.ACCEPTED} : null);
+      // Directly update status without confirm dialog for better UX
+      const updatedQuote = { ...quote, status: QuoteStatus.ACCEPTED };
+      setQuotes(prev => prev.map(q => q.id === quote.id ? updatedQuote : q));
+      
+      // Explicitly update the view state if this quote is currently being viewed
+      if (viewQuote?.id === quote.id) {
+          setViewQuote(updatedQuote);
       }
   };
 
-  const handleRejectQuote = (e: React.MouseEvent, quote: Quote) => {
+  const handleInitiateReject = (e: React.MouseEvent, quote: Quote) => {
+      e.preventDefault();
       e.stopPropagation();
-      const reason = window.prompt("Please enter reason for requesting changes/rejection:");
-      if (reason === null) return; // Cancelled
+      setRejectingQuote(quote);
+      setRejectionReason('');
+  };
+
+  const handleConfirmRejection = () => {
+      if (!rejectingQuote) return;
+
+      const reason = rejectionReason || "No reason provided";
+      const updatedNotes = rejectingQuote.notes 
+        ? `${rejectingQuote.notes}\n[Changes Requested ${new Date().toLocaleDateString()}]: ${reason}` 
+        : `[Changes Requested ${new Date().toLocaleDateString()}]: ${reason}`;
       
-      const updatedNotes = quote.notes ? `${quote.notes}\n[Changes Requested ${new Date().toLocaleDateString()}]: ${reason}` : `[Changes Requested ${new Date().toLocaleDateString()}]: ${reason}`;
-      
-      setQuotes(prev => prev.map(q => q.id === quote.id ? { 
-          ...q, 
+      const updatedQuote = { 
+          ...rejectingQuote, 
           status: QuoteStatus.REJECTED,
           notes: updatedNotes
-      } : q));
+      };
       
-      if (viewQuote?.id === quote.id) setViewQuote(prev => prev ? {...prev, status: QuoteStatus.REJECTED, notes: updatedNotes} : null);
+      setQuotes(prev => prev.map(q => q.id === rejectingQuote.id ? updatedQuote : q));
+      
+      // Update the modal view if it's currently open so user sees the change
+      if (viewQuote?.id === rejectingQuote.id) {
+          setViewQuote(updatedQuote);
+      }
+
+      // Close rejection modal
+      setRejectingQuote(null);
+      setRejectionReason('');
   };
 
   const handleSendQuote = (e: React.MouseEvent, quote: Quote) => {
       e.stopPropagation();
       if (confirm(`Send quote ${quote.id} to customer?`)) {
-          setQuotes(prev => prev.map(q => q.id === quote.id ? { ...q, status: QuoteStatus.SENT } : q));
-          if (viewQuote?.id === quote.id) setViewQuote(prev => prev ? {...prev, status: QuoteStatus.SENT} : null);
+          const updatedQuote = { ...quote, status: QuoteStatus.SENT };
+          setQuotes(prev => prev.map(q => q.id === quote.id ? updatedQuote : q));
+          if (viewQuote?.id === quote.id) {
+              setViewQuote(updatedQuote);
+          }
           alert(`Quote ${quote.id} marked as Sent.`);
       }
   };
 
   const handleConvertToInvoice = (e: React.MouseEvent, quote: Quote) => {
+    e.preventDefault();
     e.stopPropagation();
-    const message = quote.status !== QuoteStatus.ACCEPTED 
-        ? `Accept quote ${quote.id} and convert to an invoice?` 
-        : `Convert quote ${quote.id} to an invoice?`;
+    
+    // Create new invoice object
+    const newInvoice: Invoice = {
+        id: `INV-${new Date().getFullYear()}-${Math.floor(Math.random() * 10000)}`,
+        customerId: quote.customerId,
+        customerName: quote.customerName,
+        date: new Date().toISOString().split('T')[0],
+        dueDate: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString().split('T')[0], // Default 14 days
+        items: quote.items.map(item => ({...item})), // Deep copy items
+        subtotal: quote.subtotal,
+        tax: quote.tax,
+        totalAmount: quote.totalAmount,
+        status: InvoiceStatus.DRAFT
+    };
 
-    if (confirm(message)) {
-        const newInvoice: Invoice = {
-            id: `INV-${new Date().getFullYear()}-${Math.floor(Math.random() * 10000)}`,
-            customerId: quote.customerId,
-            customerName: quote.customerName,
-            date: new Date().toISOString().split('T')[0],
-            dueDate: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString().split('T')[0], // Default 14 days
-            items: quote.items.map(item => ({...item})), // Deep copy items
-            subtotal: quote.subtotal,
-            tax: quote.tax,
-            totalAmount: quote.totalAmount,
-            status: InvoiceStatus.DRAFT
-        };
+    const updatedQuote = { ...quote, status: QuoteStatus.ACCEPTED };
 
-        setInvoices(prev => [newInvoice, ...prev]);
-        setQuotes(prev => prev.map(q => q.id === quote.id ? { ...q, status: QuoteStatus.ACCEPTED } : q));
-        
-        // Navigate to Invoices tab
-        setActiveTab('invoices');
-    }
+    // Update state in parent
+    setInvoices(prev => [newInvoice, ...prev]);
+    setQuotes(prev => prev.map(q => q.id === quote.id ? updatedQuote : q));
+    
+    // Close modal if open
+    setViewQuote(null);
+    
+    // Navigate immediately - React state updates will be batched or processed by parent
+    setActiveTab('invoices');
   };
 
   const { subtotal, tax, total } = calculateTotals();
@@ -218,6 +287,7 @@ const QuoteList: React.FC<QuoteListProps> = ({ quotes, customers, products, setQ
           <p className="text-slate-500 mt-1">Manage customer estimates and project proposals.</p>
         </div>
         <button 
+          type="button"
           onClick={handleOpenCreateModal}
           className="bg-[#FFB600] hover:bg-amber-500 text-slate-900 px-4 py-2 rounded-lg font-bold transition-colors shadow-sm flex items-center gap-2"
         >
@@ -254,7 +324,7 @@ const QuoteList: React.FC<QuoteListProps> = ({ quotes, customers, products, setQ
             </thead>
             <tbody className="divide-y divide-slate-100">
               {filteredQuotes.map((quote) => (
-                <tr key={quote.id} className="hover:bg-slate-50 transition-colors">
+                <tr key={quote.id} className="hover:bg-slate-50 transition-colors cursor-default">
                   <td className="px-6 py-4 font-mono font-medium text-slate-700">{quote.id}</td>
                   <td className="px-6 py-4 font-medium text-slate-800">{quote.customerName}</td>
                   <td className="px-6 py-4 text-slate-500">{quote.date}</td>
@@ -266,24 +336,35 @@ const QuoteList: React.FC<QuoteListProps> = ({ quotes, customers, products, setQ
                     </span>
                   </td>
                   <td className="px-6 py-4 text-center">
-                    <div className="flex items-center justify-center gap-2">
+                    <div className="flex items-center justify-center gap-2 flex-wrap">
                          <button 
                             type="button"
                             onClick={() => setViewQuote(quote)}
-                            className="text-slate-400 hover:text-blue-600 p-1" 
+                            className="flex items-center gap-1 text-slate-600 hover:text-blue-600 border border-slate-200 hover:border-blue-200 bg-white px-2 py-1 rounded text-xs font-medium transition-colors" 
                             title="View Details"
                         >
-                            <Eye size={16} />
+                            <Eye size={14} /> View
                         </button>
                         
+                        {(quote.status === QuoteStatus.ACCEPTED || quote.status === QuoteStatus.SENT) && (
+                            <button 
+                                type="button"
+                                onClick={(e) => handleConvertToInvoice(e, quote)}
+                                className="flex items-center gap-1 text-blue-700 hover:text-blue-800 border border-blue-200 hover:border-blue-300 bg-blue-50 px-2 py-1 rounded text-xs font-medium transition-colors" 
+                                title="Convert to Invoice"
+                            >
+                                <FileCheck size={14} /> Convert
+                            </button>
+                        )}
+
                         {(quote.status === QuoteStatus.DRAFT || quote.status === QuoteStatus.SENT || quote.status === QuoteStatus.REJECTED) && (
                             <button 
                                 type="button"
                                 onClick={(e) => handleEditQuote(e, quote)}
-                                className="text-slate-400 hover:text-amber-600 p-1" 
+                                className="flex items-center gap-1 text-slate-600 hover:text-amber-600 border border-slate-200 hover:border-amber-200 bg-white px-2 py-1 rounded text-xs font-medium transition-colors" 
                                 title="Edit Quote"
                             >
-                                <Edit size={16} />
+                                <Edit size={14} /> Edit
                             </button>
                         )}
 
@@ -292,39 +373,29 @@ const QuoteList: React.FC<QuoteListProps> = ({ quotes, customers, products, setQ
                                 <button 
                                     type="button"
                                     onClick={(e) => handleApproveQuote(e, quote)}
-                                    className="text-slate-400 hover:text-green-600 p-1" 
+                                    className="flex items-center gap-1 text-green-600 hover:text-green-700 border border-green-200 hover:border-green-300 bg-green-50 px-2 py-1 rounded text-xs font-medium transition-colors" 
                                     title="Mark Accepted"
                                 >
-                                    <CheckCircle size={16} />
+                                    <CheckCircle size={14} /> Accept
                                 </button>
                                 <button 
                                     type="button"
-                                    onClick={(e) => handleRejectQuote(e, quote)}
-                                    className="text-slate-400 hover:text-red-600 p-1" 
+                                    onClick={(e) => handleInitiateReject(e, quote)}
+                                    className="flex items-center gap-1 text-red-600 hover:text-red-700 border border-red-200 hover:border-red-300 bg-red-50 px-2 py-1 rounded text-xs font-medium transition-colors" 
                                     title="Reject"
                                 >
-                                    <XCircle size={16} />
+                                    <XCircle size={14} /> Reject
                                 </button>
                             </>
-                        )}
-                        {(quote.status === QuoteStatus.ACCEPTED || quote.status === QuoteStatus.SENT) && (
-                            <button 
-                                type="button"
-                                onClick={(e) => handleConvertToInvoice(e, quote)}
-                                className="text-blue-500 hover:text-blue-700 p-1" 
-                                title="Convert to Invoice"
-                            >
-                                <FileCheck size={16} />
-                            </button>
                         )}
                         {quote.status === QuoteStatus.DRAFT && (
                             <button 
                                 type="button"
                                 onClick={(e) => handleSendQuote(e, quote)}
-                                className="text-slate-400 hover:text-blue-600 p-1" 
+                                className="flex items-center gap-1 text-blue-600 hover:text-blue-700 border border-blue-200 hover:border-blue-300 bg-blue-50 px-2 py-1 rounded text-xs font-medium transition-colors" 
                                 title="Mark as Sent"
                             >
-                                <Send size={16} />
+                                <Send size={14} /> Send
                             </button>
                         )}
                     </div>
@@ -432,7 +503,7 @@ const QuoteList: React.FC<QuoteListProps> = ({ quotes, customers, products, setQ
                     </div>
                 </div>
 
-                <div className="p-4 border-t border-slate-200 bg-slate-50 flex justify-end gap-3">
+                <div className="p-4 border-t border-slate-200 bg-white flex justify-end gap-3">
                     <button 
                         onClick={() => setViewQuote(null)}
                         className="px-4 py-2 text-slate-600 font-medium hover:bg-slate-200 rounded-lg transition-colors"
@@ -441,14 +512,16 @@ const QuoteList: React.FC<QuoteListProps> = ({ quotes, customers, products, setQ
                     </button>
                     {(viewQuote.status === QuoteStatus.DRAFT || viewQuote.status === QuoteStatus.SENT) && (
                          <button 
+                            type="button"
                             onClick={(e) => handleEditQuote(e, viewQuote)}
                             className="px-4 py-2 bg-white border border-slate-300 text-slate-700 font-bold rounded-lg hover:bg-slate-100 transition-colors shadow-sm flex items-center gap-2"
                         >
                             <Edit size={16} /> Edit
                         </button>
                     )}
-                    {viewQuote.status === QuoteStatus.ACCEPTED && (
+                    {(viewQuote.status === QuoteStatus.ACCEPTED || viewQuote.status === QuoteStatus.SENT) && (
                          <button 
+                            type="button"
                             onClick={(e) => handleConvertToInvoice(e, viewQuote)}
                             className="px-6 py-2 bg-blue-600 text-white font-bold rounded-lg hover:bg-blue-700 transition-colors shadow-sm flex items-center gap-2"
                         >
@@ -458,12 +531,14 @@ const QuoteList: React.FC<QuoteListProps> = ({ quotes, customers, products, setQ
                     {(viewQuote.status === QuoteStatus.SENT || viewQuote.status === QuoteStatus.DRAFT) && (
                         <>
                              <button 
-                                onClick={(e) => handleRejectQuote(e, viewQuote)}
+                                type="button"
+                                onClick={(e) => handleInitiateReject(e, viewQuote)}
                                 className="px-4 py-2 bg-white border border-slate-200 text-red-600 font-bold rounded-lg hover:bg-red-50 transition-colors shadow-sm"
                             >
                                 Reject
                             </button>
                              <button 
+                                type="button"
                                 onClick={(e) => handleApproveQuote(e, viewQuote)}
                                 className="px-4 py-2 bg-green-600 text-white font-bold rounded-lg hover:bg-green-700 transition-colors shadow-sm"
                             >
@@ -471,6 +546,47 @@ const QuoteList: React.FC<QuoteListProps> = ({ quotes, customers, products, setQ
                             </button>
                         </>
                     )}
+                </div>
+            </div>
+        </div>
+      )}
+
+      {/* Reject Reason Modal */}
+      {rejectingQuote && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-[60] flex items-center justify-center p-4">
+            <div className="bg-white rounded-xl w-full max-w-md shadow-2xl p-6 flex flex-col animate-fade-in">
+                <div className="flex items-center gap-3 mb-4 text-red-600">
+                    <div className="p-2 bg-red-50 rounded-full">
+                        <AlertTriangle size={24} />
+                    </div>
+                    <h3 className="text-lg font-bold text-slate-800">Reject Quote</h3>
+                </div>
+                
+                <p className="text-sm text-slate-500 mb-4">
+                    Please provide a reason for rejecting quote <span className="font-mono font-bold text-slate-700">{rejectingQuote.id}</span>. This will be recorded in the project notes.
+                </p>
+                
+                <textarea 
+                    className="w-full border border-slate-300 rounded-lg p-3 text-sm h-32 focus:ring-2 focus:ring-red-500 focus:border-red-500 outline-none resize-none mb-6"
+                    placeholder="e.g. Price is too high, incorrect quantity, customer requested different model..."
+                    value={rejectionReason}
+                    onChange={(e) => setRejectionReason(e.target.value)}
+                    autoFocus
+                />
+                
+                <div className="flex justify-end gap-3">
+                    <button 
+                        onClick={() => { setRejectingQuote(null); setRejectionReason(''); }}
+                        className="px-4 py-2 text-slate-600 font-medium hover:bg-slate-100 rounded-lg transition-colors"
+                    >
+                        Cancel
+                    </button>
+                    <button 
+                        onClick={handleConfirmRejection}
+                        className="px-4 py-2 bg-red-600 text-white font-bold rounded-lg hover:bg-red-700 transition-colors shadow-sm"
+                    >
+                        Confirm Rejection
+                    </button>
                 </div>
             </div>
         </div>
@@ -490,19 +606,28 @@ const QuoteList: React.FC<QuoteListProps> = ({ quotes, customers, products, setQ
                 </div>
                 
                 <div className="p-8 overflow-y-auto flex-1 bg-slate-50">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
                         <div>
                             <label className="block text-sm font-medium text-slate-700 mb-1">Customer</label>
-                            <div className="relative">
-                                <User className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={16} />
-                                <select 
-                                    className="w-full pl-10 border border-slate-300 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-[#FFB600] focus:border-[#FFB600] outline-none bg-white"
-                                    onChange={(e) => setNewQuote(prev => ({...prev, customerId: e.target.value}))}
-                                    value={newQuote.customerId}
+                            <div className="flex gap-2">
+                                <div className="relative flex-1">
+                                    <User className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={16} />
+                                    <select 
+                                        className="w-full pl-10 border border-slate-300 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-[#FFB600] focus:border-[#FFB600] outline-none bg-white"
+                                        onChange={(e) => setNewQuote(prev => ({...prev, customerId: e.target.value}))}
+                                        value={newQuote.customerId}
+                                    >
+                                        <option value="">Select Customer</option>
+                                        {customers.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+                                    </select>
+                                </div>
+                                <button 
+                                    onClick={(e) => { e.preventDefault(); setIsAddCustomerModalOpen(true); }}
+                                    className="bg-[#FFB600] hover:bg-amber-500 text-slate-900 px-3 py-2.5 rounded-lg font-bold transition-colors shadow-sm flex items-center gap-2 whitespace-nowrap"
+                                    title="Add New Customer"
                                 >
-                                    <option value="">Select Customer</option>
-                                    {customers.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
-                                </select>
+                                    <UserPlus size={18} /> Add Customer
+                                </button>
                             </div>
                         </div>
                         <div>
@@ -518,12 +643,12 @@ const QuoteList: React.FC<QuoteListProps> = ({ quotes, customers, products, setQ
                             </div>
                         </div>
                     </div>
-                    
+
                     <div className="mb-6">
-                        <label className="block text-sm font-medium text-slate-700 mb-1">Project Notes / Scope</label>
+                        <label className="block text-sm font-medium text-slate-700 mb-1">Project Notes</label>
                         <textarea 
-                            className="w-full border border-slate-300 rounded-lg p-3 text-sm h-20 focus:ring-2 focus:ring-[#FFB600] focus:border-[#FFB600] outline-none resize-none"
-                            placeholder="Describe project scope or special conditions..."
+                            className="w-full border border-slate-300 rounded-lg p-3 text-sm h-24 focus:ring-2 focus:ring-[#FFB600] focus:border-[#FFB600] outline-none resize-none"
+                            placeholder="Add details about the project..."
                             value={newQuote.notes}
                             onChange={(e) => setNewQuote(prev => ({...prev, notes: e.target.value}))}
                         />
@@ -580,6 +705,13 @@ const QuoteList: React.FC<QuoteListProps> = ({ quotes, customers, products, setQ
                                         </td>
                                     </tr>
                                 ))}
+                                {newQuote.items.length === 0 && (
+                                    <tr>
+                                        <td colSpan={5} className="px-4 py-8 text-center text-slate-400 italic">
+                                            No items added. Click "Add Item" to start.
+                                        </td>
+                                    </tr>
+                                )}
                             </tbody>
                         </table>
                         <div className="p-3 bg-slate-50 border-t border-slate-200">
@@ -628,6 +760,81 @@ const QuoteList: React.FC<QuoteListProps> = ({ quotes, customers, products, setQ
                 </div>
             </div>
         </div>
+      )}
+
+      {/* Add New Customer Modal (Nested) */}
+      {isAddCustomerModalOpen && (
+          <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[60] flex items-center justify-center p-4">
+              <div className="bg-white rounded-2xl w-full max-w-lg shadow-2xl overflow-hidden flex flex-col">
+                  <div className="p-6 border-b border-slate-100 flex justify-between items-center bg-slate-50">
+                      <h3 className="text-xl font-bold text-slate-800 flex items-center gap-2">
+                          <UserPlus className="text-[#FFB600]" size={20} /> Add New Customer
+                      </h3>
+                      <button onClick={() => setIsAddCustomerModalOpen(false)} className="text-slate-400 hover:text-slate-600">
+                          <X size={20} />
+                      </button>
+                  </div>
+                  <div className="p-6 space-y-4">
+                      <div>
+                          <label className="block text-sm font-medium text-slate-700 mb-1">Customer Name *</label>
+                          <input 
+                              type="text" 
+                              className="w-full border border-slate-300 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-[#FFB600] focus:border-[#FFB600] outline-none"
+                              placeholder="e.g. Acme Corp"
+                              value={newCustomerForm.name}
+                              onChange={(e) => setNewCustomerForm(prev => ({...prev, name: e.target.value}))}
+                          />
+                      </div>
+                      <div className="grid grid-cols-2 gap-4">
+                          <div>
+                              <label className="block text-sm font-medium text-slate-700 mb-1">Email</label>
+                              <input 
+                                  type="email" 
+                                  className="w-full border border-slate-300 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-[#FFB600] focus:border-[#FFB600] outline-none"
+                                  placeholder="contact@example.com"
+                                  value={newCustomerForm.email}
+                                  onChange={(e) => setNewCustomerForm(prev => ({...prev, email: e.target.value}))}
+                              />
+                          </div>
+                          <div>
+                              <label className="block text-sm font-medium text-slate-700 mb-1">Phone</label>
+                              <input 
+                                  type="tel" 
+                                  className="w-full border border-slate-300 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-[#FFB600] focus:border-[#FFB600] outline-none"
+                                  placeholder="(555) 123-4567"
+                                  value={newCustomerForm.phone}
+                                  onChange={(e) => setNewCustomerForm(prev => ({...prev, phone: e.target.value}))}
+                              />
+                          </div>
+                      </div>
+                      <div>
+                          <label className="block text-sm font-medium text-slate-700 mb-1">Address</label>
+                          <input 
+                              type="text" 
+                              className="w-full border border-slate-300 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-[#FFB600] focus:border-[#FFB600] outline-none"
+                              placeholder="123 Main St, City, State"
+                              value={newCustomerForm.address}
+                              onChange={(e) => setNewCustomerForm(prev => ({...prev, address: e.target.value}))}
+                          />
+                      </div>
+                  </div>
+                  <div className="p-4 border-t border-slate-200 bg-slate-50 flex justify-end gap-3">
+                      <button 
+                          onClick={() => setIsAddCustomerModalOpen(false)}
+                          className="px-4 py-2 text-slate-600 font-medium hover:bg-slate-100 rounded-lg transition-colors"
+                      >
+                          Cancel
+                      </button>
+                      <button 
+                          onClick={handleSaveNewCustomer}
+                          disabled={!newCustomerForm.name}
+                          className="px-6 py-2 bg-[#FFB600] text-slate-900 font-bold rounded-lg hover:bg-amber-500 transition-colors shadow-sm disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                      >
+                          <Save size={18} /> Add Customer
+                      </button>
+                  </div>
+              </div>
+          </div>
       )}
     </div>
   );

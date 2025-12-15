@@ -41,7 +41,9 @@ export interface CustomerNote {
   id: string;
   content: string;
   author: string;
+  authorId?: string; // Added authorId to link to Staff
   date: string;
+  attachment?: string;
 }
 
 export interface Customer {
@@ -54,6 +56,14 @@ export interface Customer {
   systems: AlarmSystem[];
   notes: string;
   noteHistory?: CustomerNote[];
+  image?: string; // Added image field
+}
+
+export interface TicketHistoryEntry {
+  date: string;
+  action: string;
+  user: string;
+  details?: string;
 }
 
 export interface Ticket {
@@ -76,6 +86,11 @@ export interface Ticket {
   estimatedDuration?: string;
   location?: string;
   requiredTools?: string[];
+  history?: TicketHistoryEntry[];
+  notes?: string; // Added notes field for job schedule
+  noteTitle?: string; // Added note title
+  photos?: string[]; // Added photos for job completion
+  signature?: string; // Added signature for job completion
 }
 
 export interface AIAnalysisResult {
@@ -204,6 +219,8 @@ export interface Staff {
   role: Role;
   email: string;
   phone: string;
+  address?: string;
+  image?: string;
   activeLeads?: number;
 }
 

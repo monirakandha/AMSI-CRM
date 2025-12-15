@@ -1,5 +1,11 @@
 
-import { Customer, SystemStatus, Ticket, TicketPriority, TicketStatus, Product, Invoice, InvoiceStatus, Quote, QuoteStatus, Staff, Role, Lead, LeadStatus, Subscription, SubscriptionStatus, BillingCycle } from "./types";
+import { Customer, SystemStatus, Ticket, TicketPriority, TicketStatus, Product, Invoice, InvoiceStatus, Quote, QuoteStatus, Staff, Role, Lead, LeadStatus, Subscription, SubscriptionStatus, BillingCycle, JobType } from "./types";
+
+const today = new Date();
+const tomorrow = new Date(today);
+tomorrow.setDate(tomorrow.getDate() + 1);
+const nextWeek = new Date(today);
+nextWeek.setDate(nextWeek.getDate() + 7);
 
 export const MOCK_CUSTOMERS: Customer[] = [
   {
@@ -98,13 +104,13 @@ export const MOCK_SUBSCRIPTIONS: Subscription[] = [
 ];
 
 export const MOCK_STAFF: Staff[] = [
-    { id: "ST-001", name: "John Salesman", role: Role.SALES, email: "john@amsi.com", phone: "555-001-0001", activeLeads: 5 },
-    { id: "ST-002", name: "Jane Closer", role: Role.SALES, email: "jane@amsi.com", phone: "555-001-0002", activeLeads: 8 },
-    { id: "ENG-001", name: "Robert Engineer", role: Role.ENGINEER, email: "rob@amsi.com", phone: "555-002-0001" },
-    { id: "ENG-002", name: "Emily Tech", role: Role.ENGINEER, email: "emily@amsi.com", phone: "555-002-0002" },
-    { id: "TECH-001", name: "Mike Repairman", role: Role.TECH, email: "mike@amsi.com", phone: "555-003-0001" },
-    { id: "TECH-002", name: "Sarah Installer", role: Role.TECH, email: "sarah.i@amsi.com", phone: "555-003-0002" },
-    { id: "ADMIN-001", name: "Sarah Admin", role: Role.ADMIN, email: "admin@amsi.com", phone: "555-000-0000" }
+    { id: "ST-001", name: "John Salesman", role: Role.SALES, email: "john@amsi.com", phone: "555-001-0001", address: "123 Sales Ave, Business City", activeLeads: 5 },
+    { id: "ST-002", name: "Jane Closer", role: Role.SALES, email: "jane@amsi.com", phone: "555-001-0002", address: "456 Deal Dr, Closing Town", activeLeads: 8 },
+    { id: "ENG-001", name: "Robert Engineer", role: Role.ENGINEER, email: "rob@amsi.com", phone: "555-002-0001", address: "789 Tech Rd, Innovation Park" },
+    { id: "ENG-002", name: "Emily Tech", role: Role.ENGINEER, email: "emily@amsi.com", phone: "555-002-0002", address: "101 Circuit Ln, Silicon Valley" },
+    { id: "TECH-001", name: "Mike Repairman", role: Role.TECH, email: "mike@amsi.com", phone: "555-003-0001", address: "555 Tool St, Fixit City" },
+    { id: "TECH-002", name: "Sarah Installer", role: Role.TECH, email: "sarah.i@amsi.com", phone: "555-003-0002", address: "888 Cable Ct, Network City" },
+    { id: "ADMIN-001", name: "Sarah Admin", role: Role.ADMIN, email: "admin@amsi.com", phone: "555-000-0000", address: "999 Office Plaza, Admin City" }
 ];
 
 export const MOCK_TICKETS: Ticket[] = [
@@ -116,12 +122,19 @@ export const MOCK_TICKETS: Ticket[] = [
     description: "Panel beeping every 4 hours showing 'System Low Bat'. Power cycle didn't fix.",
     status: TicketStatus.OPEN,
     priority: TicketPriority.MEDIUM,
-    createdAt: "2024-05-20T09:00:00Z",
+    createdAt: new Date().toISOString(),
+    scheduledDate: new Date(today.setHours(9, 0, 0, 0)).toISOString(),
+    estimatedDuration: "2 hours",
+    jobType: JobType.SERVICE,
+    assignedTech: "TECH-001",
     aiAnalysis: {
       suggestedAction: "Replace backup battery (12V 7Ah). Check charging circuit voltage.",
       estimatedTime: "30 mins",
       requiredParts: ["12V 7Ah Battery"]
-    }
+    },
+    history: [
+        { date: new Date().toISOString(), action: "Ticket Created", user: "System", details: "Initial creation via customer portal" }
+    ]
   },
   {
     id: "TKT-102",
@@ -130,9 +143,49 @@ export const MOCK_TICKETS: Ticket[] = [
     title: "Zone 5 Open Fault",
     description: "Warehouse bay door contact showing open even when closed. Magnet appears aligned.",
     status: TicketStatus.ASSIGNED,
-    assignedTech: "TECH-001",
+    assignedTech: "TECH-002",
     priority: TicketPriority.HIGH,
-    createdAt: "2024-05-21T14:30:00Z"
+    jobType: JobType.SERVICE,
+    scheduledDate: new Date(today.setHours(14, 30, 0, 0)).toISOString(),
+    estimatedDuration: "1.5 hours",
+    createdAt: new Date().toISOString(),
+    history: [
+        { date: new Date().toISOString(), action: "Ticket Created", user: "Dispatch", details: "Phone report from client" },
+        { date: new Date().toISOString(), action: "Status Change", user: "Dispatch", details: "Assigned to Mike Repairman" }
+    ]
+  },
+  {
+    id: "TKT-103",
+    customerId: "CUST-002",
+    systemId: "SYS-B2",
+    title: "System Maintenance",
+    description: "Annual preventive maintenance check.",
+    status: TicketStatus.ASSIGNED,
+    assignedTech: "TECH-001",
+    priority: TicketPriority.LOW,
+    jobType: JobType.MAINTENANCE,
+    scheduledDate: new Date(tomorrow.setHours(10, 0, 0, 0)).toISOString(),
+    estimatedDuration: "3 hours",
+    createdAt: new Date().toISOString(),
+    history: [
+        { date: new Date().toISOString(), action: "Ticket Created", user: "System", details: "Auto-generated maintenance ticket" }
+    ]
+  },
+  {
+    id: "TKT-104",
+    customerId: "CUST-001",
+    systemId: "SYS-A1",
+    title: "New Camera Install",
+    description: "Install 2 new PTZ cameras on North perimeter.",
+    status: TicketStatus.OPEN,
+    priority: TicketPriority.MEDIUM,
+    jobType: JobType.INSTALL,
+    scheduledDate: new Date(nextWeek.setHours(11, 0, 0, 0)).toISOString(),
+    estimatedDuration: "4 hours",
+    createdAt: new Date().toISOString(),
+    history: [
+        { date: new Date().toISOString(), action: "Ticket Created", user: "Sales", details: "Project sold by John" }
+    ]
   }
 ];
 
@@ -244,8 +297,8 @@ export const MOCK_QUOTES: Quote[] = [
     id: "Q-1001",
     customerId: "CUST-003",
     customerName: "TechStart Hub",
-    date: "2024-05-25",
-    expiryDate: "2024-06-25",
+    date: new Date().toISOString().split('T')[0],
+    expiryDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
     status: QuoteStatus.SENT,
     subtotal: 1200.00,
     tax: 96.00,
@@ -254,6 +307,21 @@ export const MOCK_QUOTES: Quote[] = [
         { id: "1", productId: "SYS", productName: "System Upgrade Package", quantity: 1, unitPrice: 1200.00, total: 1200.00 }
     ],
     notes: "Upgrade to main lobby panel."
+  },
+  {
+    id: "Q-1002",
+    customerId: "CUST-001",
+    customerName: "Acme Corp Logistics",
+    date: new Date().toISOString().split('T')[0],
+    expiryDate: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+    status: QuoteStatus.DRAFT,
+    subtotal: 500.00,
+    tax: 40.00,
+    totalAmount: 540.00,
+    items: [
+        { id: "1", productId: "CAM", productName: "Additional PTZ Camera", quantity: 1, unitPrice: 500.00, total: 500.00 }
+    ],
+    notes: "Proposed addition for rear dock."
   }
 ];
 

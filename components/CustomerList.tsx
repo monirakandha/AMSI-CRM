@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react';
-import { Customer, SystemStatus, Ticket, Invoice, Quote, TicketStatus, TicketPriority, Staff, CustomerNote } from '../types';
-import { Search, MapPin, Phone, Shield, MoreVertical, X, FileText, AlertCircle, FileBarChart, Mail, Gift, CheckCircle, Plus, UserPlus, LayoutGrid, List, MessageSquare, Send, User } from 'lucide-react';
+import React, { useState, useEffect, useRef } from 'react';
+import { Customer, SystemStatus, Ticket, Invoice, Quote, TicketStatus, TicketPriority, Staff, CustomerNote, Role } from '../types';
+import { Search, MapPin, Phone, Shield, MoreVertical, X, FileText, AlertCircle, FileBarChart, Mail, Gift, CheckCircle, Plus, UserPlus, LayoutGrid, List, MessageSquare, Send, User, Paperclip, Edit, Camera, Upload, Trash2 } from 'lucide-react';
 
 interface CustomerListProps {
   customers: Customer[];
@@ -10,12 +10,13 @@ interface CustomerListProps {
   quotes?: Quote[]; // Optional for detail view
   setTickets?: React.Dispatch<React.SetStateAction<Ticket[]>>;
   currentUser: Staff;
+  staff: Staff[];
   initialCustomerId?: string;
   initialTab?: string;
   onConsumeNavParams?: () => void;
 }
 
-const CustomerList: React.FC<CustomerListProps> = ({ customers, setCustomers, tickets = [], invoices = [], quotes = [], setTickets, currentUser, initialCustomerId, initialTab, onConsumeNavParams }) => {
+const CustomerList: React.FC<CustomerListProps> = ({ customers, setCustomers, tickets = [], invoices = [], quotes = [], setTickets, currentUser, staff, initialCustomerId, initialTab, onConsumeNavParams }) => {
   const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null);
   const [activeDetailTab, setActiveDetailTab] = useState<'overview' | 'systems' | 'tickets' | 'invoices' | 'quotes' | 'notes'>('overview');
   const [searchTerm, setSearchTerm] = useState('');
@@ -23,17 +24,22 @@ const CustomerList: React.FC<CustomerListProps> = ({ customers, setCustomers, ti
   
   // Note State
   const [newNoteContent, setNewNoteContent] = useState('');
+  const [noteAttachment, setNoteAttachment] = useState<string | null>(null);
+  const noteFileInputRef = useRef<HTMLInputElement>(null);
 
-  // Add Customer State
+  // Add/Edit Customer State
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+  const [editingId, setEditingId] = useState<string | null>(null);
   const [newCustomer, setNewCustomer] = useState<Partial<Customer>>({
     name: '',
     email: '',
     phone: '',
     address: '',
     contractValue: 0,
-    notes: ''
+    notes: '',
+    image: ''
   });
+  const customerFileInputRef = useRef<HTMLInputElement>(null);
 
   // Handle navigation from other components (deep linking)
   useEffect(() => {
@@ -102,22 +108,72 @@ const CustomerList: React.FC<CustomerListProps> = ({ customers, setCustomers, ti
     alert("Service Request Created. Engineering team has been notified via high-priority ticket.");
   };
 
-  const handleAddCustomer = () => {
+  const handleOpenAdd = () => {
+      setEditingId(null);
+      setNewCustomer({
+        name: '',
+        email: '',
+        phone: '',
+        address: '',
+        contractValue: 0,
+        notes: '',
+        image: ''
+      });
+      setIsAddModalOpen(true);
+  };
+
+  const handleOpenEdit = (customer: Customer) => {
+      setEditingId(customer.id);
+      setNewCustomer({ ...customer });
+      setIsAddModalOpen(true);
+  };
+
+  const handleCustomerImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setNewCustomer(prev => ({ ...prev, image: reader.result as string }));
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleRemoveCustomerImage = (e: React.MouseEvent) => {
+      e.stopPropagation();
+      setNewCustomer(prev => ({ ...prev, image: '' }));
+      if (customerFileInputRef.current) customerFileInputRef.current.value = '';
+  };
+
+  const handleSaveCustomer = () => {
     if (!newCustomer.name || !newCustomer.email) return;
 
-    const customer: Customer = {
-        id: `CUST-${Math.floor(Math.random() * 10000)}`,
-        name: newCustomer.name,
-        email: newCustomer.email,
-        phone: newCustomer.phone || '',
-        address: newCustomer.address || '',
-        contractValue: Number(newCustomer.contractValue) || 0,
-        notes: newCustomer.notes || '',
-        systems: [], // Initialize with no systems
-        noteHistory: []
-    };
+    if (editingId) {
+        // Edit Mode
+        const updatedCustomer = { ...newCustomer } as Customer;
+        setCustomers(prev => prev.map(c => c.id === editingId ? { ...c, ...updatedCustomer } : c));
+        
+        // Update selected customer view if it's the one being edited
+        if (selectedCustomer && selectedCustomer.id === editingId) {
+            setSelectedCustomer(prev => prev ? { ...prev, ...updatedCustomer } as Customer : null);
+        }
+    } else {
+        // Create Mode
+        const customer: Customer = {
+            id: `CUST-${Math.floor(Math.random() * 10000)}`,
+            name: newCustomer.name || '',
+            email: newCustomer.email || '',
+            phone: newCustomer.phone || '',
+            address: newCustomer.address || '',
+            contractValue: Number(newCustomer.contractValue) || 0,
+            notes: newCustomer.notes || '',
+            systems: [], // Initialize with no systems
+            noteHistory: [],
+            image: newCustomer.image
+        };
+        setCustomers(prev => [...prev, customer]);
+    }
 
-    setCustomers(prev => [...prev, customer]);
     setIsAddModalOpen(false);
     setNewCustomer({
         name: '',
@@ -125,18 +181,33 @@ const CustomerList: React.FC<CustomerListProps> = ({ customers, setCustomers, ti
         phone: '',
         address: '',
         contractValue: 0,
-        notes: ''
+        notes: '',
+        image: ''
     });
+    setEditingId(null);
+  };
+
+  const handleNoteFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setNoteAttachment(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
   };
 
   const handleAddNote = () => {
-    if (!selectedCustomer || !newNoteContent.trim()) return;
+    if (!selectedCustomer || (!newNoteContent.trim() && !noteAttachment)) return;
 
     const newNote: CustomerNote = {
       id: `NOTE-${Date.now()}`,
       content: newNoteContent,
       author: currentUser.name,
-      date: new Date().toISOString()
+      authorId: currentUser.id,
+      date: new Date().toISOString(),
+      attachment: noteAttachment || undefined
     };
 
     const updatedCustomer = {
@@ -147,6 +218,8 @@ const CustomerList: React.FC<CustomerListProps> = ({ customers, setCustomers, ti
     setCustomers(prev => prev.map(c => c.id === selectedCustomer.id ? updatedCustomer : c));
     setSelectedCustomer(updatedCustomer);
     setNewNoteContent('');
+    setNoteAttachment(null);
+    if (noteFileInputRef.current) noteFileInputRef.current.value = '';
   };
 
   const hasClaimedFreeService = selectedCustomer && customerTickets.some(t => t.title === "Free After-Sales Service Call");
@@ -183,7 +256,7 @@ const CustomerList: React.FC<CustomerListProps> = ({ customers, setCustomers, ti
                 </button>
             </div>
             <button 
-                onClick={() => setIsAddModalOpen(true)}
+                onClick={handleOpenAdd}
                 className="bg-[#FFB600] hover:bg-amber-500 text-slate-900 px-4 py-2 rounded-lg font-bold transition-colors shadow-sm flex items-center gap-2"
             >
             <UserPlus size={18} /> Add Customer
@@ -214,39 +287,58 @@ const CustomerList: React.FC<CustomerListProps> = ({ customers, setCustomers, ti
                 className={`border border-slate-200 rounded-lg p-5 hover:border-[#FFB600] transition-all hover:shadow-md bg-white group cursor-pointer ${viewMode === 'grid' ? 'flex flex-col' : ''}`}
             >
               <div className={`flex gap-4 ${viewMode === 'list' ? 'flex-col lg:flex-row justify-between lg:items-center' : 'flex-col'}`}>
-                <div className="flex-1">
-                  <div className="flex items-center justify-between mb-1">
-                    <h3 className="text-lg font-bold text-slate-800 truncate pr-2">{customer.name}</h3>
-                    <button className={`text-slate-400 hover:text-slate-600 ${viewMode === 'list' ? 'lg:hidden' : ''}`}>
-                        <MoreVertical size={20} />
-                    </button>
-                  </div>
-                  
-                  <div className={`flex text-sm text-slate-500 mb-4 ${viewMode === 'list' ? 'flex-col sm:flex-row gap-1 sm:gap-6' : 'flex-col gap-2'}`}>
-                    <div className="flex items-center gap-2 truncate">
-                        <MapPin size={16} className="flex-shrink-0" />
-                        <span className="truncate">{customer.address}</span>
+                {/* Profile Image & Main Info */}
+                <div className="flex gap-4 flex-1">
+                    <div className="w-12 h-12 bg-slate-100 rounded-full flex-shrink-0 border border-slate-200 overflow-hidden flex items-center justify-center">
+                        {customer.image ? (
+                            <img src={customer.image} alt={customer.name} className="w-full h-full object-cover" />
+                        ) : (
+                            <span className="text-slate-500 font-bold text-lg">{customer.name.charAt(0)}</span>
+                        )}
                     </div>
-                    <div className="flex items-center gap-2">
-                        <Phone size={16} className="flex-shrink-0" />
-                        {customer.phone}
-                    </div>
-                  </div>
-
-                  <div className="space-y-2">
-                    {customer.systems.length > 0 ? customer.systems.map((sys) => (
-                        <div key={sys.id} className="flex items-center gap-3 text-sm bg-slate-50 p-2 rounded border border-slate-100">
-                            <Shield size={16} className="text-slate-400 flex-shrink-0" />
-                            <span className="font-medium text-slate-700 truncate">{sys.type}</span>
-                            {viewMode === 'list' && <span className="text-slate-400 text-xs hidden sm:inline">ID: {sys.id}</span>}
-                            <span className={`ml-auto px-2 py-0.5 rounded-full text-xs font-medium border whitespace-nowrap ${getStatusColor(sys.status)}`}>
-                                {sys.status}
-                            </span>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center justify-between mb-1">
+                        <h3 className="text-lg font-bold text-slate-800 truncate pr-2">{customer.name}</h3>
+                        <div className="flex items-center gap-2">
+                            <button 
+                                onClick={(e) => { e.stopPropagation(); handleOpenEdit(customer); }}
+                                className="p-1.5 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded transition-colors"
+                                title="Edit Profile"
+                            >
+                                <Edit size={16} />
+                            </button>
+                            <button className={`text-slate-400 hover:text-slate-600 ${viewMode === 'list' ? 'lg:hidden' : ''}`}>
+                                <MoreVertical size={20} />
+                            </button>
                         </div>
-                    )) : (
-                        <div className="text-xs text-slate-400 italic">No systems installed</div>
-                    )}
-                  </div>
+                      </div>
+                      
+                      <div className={`flex text-sm text-slate-500 mb-4 ${viewMode === 'list' ? 'flex-col sm:flex-row gap-1 sm:gap-6' : 'flex-col gap-2'}`}>
+                        <div className="flex items-center gap-2 truncate">
+                            <MapPin size={16} className="flex-shrink-0" />
+                            <span className="truncate">{customer.address}</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                            <Phone size={16} className="flex-shrink-0" />
+                            {customer.phone}
+                        </div>
+                      </div>
+
+                      <div className="space-y-2">
+                        {customer.systems.length > 0 ? customer.systems.map((sys) => (
+                            <div key={sys.id} className="flex items-center gap-3 text-sm bg-slate-50 p-2 rounded border border-slate-100">
+                                <Shield size={16} className="text-slate-400 flex-shrink-0" />
+                                <span className="font-medium text-slate-700 truncate">{sys.type}</span>
+                                {viewMode === 'list' && <span className="text-slate-400 text-xs hidden sm:inline">ID: {sys.id}</span>}
+                                <span className={`ml-auto px-2 py-0.5 rounded-full text-xs font-medium border whitespace-nowrap ${getStatusColor(sys.status)}`}>
+                                    {sys.status}
+                                </span>
+                            </div>
+                        )) : (
+                            <div className="text-xs text-slate-400 italic">No systems installed</div>
+                        )}
+                      </div>
+                    </div>
                 </div>
 
                 <div className={`pt-4 border-slate-100 ${viewMode === 'list' ? 'flex flex-row lg:flex-col gap-2 border-t lg:border-t-0 lg:border-l lg:pt-0 lg:pl-6 min-w-[140px]' : 'flex flex-row items-center justify-between border-t mt-auto'}`}>
@@ -269,18 +361,61 @@ const CustomerList: React.FC<CustomerListProps> = ({ customers, setCustomers, ti
         </div>
       </div>
 
-      {/* Add Customer Modal */}
+      {/* Add/Edit Customer Modal */}
       {isAddModalOpen && (
           <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-            <div className="bg-white rounded-2xl w-full max-w-lg shadow-2xl overflow-hidden">
+            <div className="bg-white rounded-2xl w-full max-w-lg shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
                 <div className="p-6 border-b border-slate-100 flex justify-between items-center bg-slate-50">
-                    <h3 className="text-xl font-bold text-slate-800">Add New Customer</h3>
+                    <h3 className="text-xl font-bold text-slate-800">
+                        {editingId ? 'Edit Customer Profile' : 'Add New Customer'}
+                    </h3>
                     <button onClick={() => setIsAddModalOpen(false)} className="text-slate-400 hover:text-slate-600">
                         <X size={20} />
                     </button>
                 </div>
                 
-                <div className="p-6 space-y-4 max-h-[70vh] overflow-y-auto">
+                <div className="p-6 space-y-4 overflow-y-auto">
+                    {/* Image Upload */}
+                    <div className="flex justify-center mb-4">
+                        <div className="relative group">
+                            <div 
+                                onClick={() => customerFileInputRef.current?.click()}
+                                className="w-24 h-24 bg-slate-100 rounded-full border-2 border-dashed border-slate-300 flex items-center justify-center cursor-pointer overflow-hidden hover:border-[#FFB600] transition-colors"
+                            >
+                                {newCustomer.image ? (
+                                    <img src={newCustomer.image} alt="Profile" className="w-full h-full object-cover" />
+                                ) : (
+                                    <div className="text-center text-slate-400">
+                                        <Camera size={24} className="mx-auto" />
+                                        <span className="text-[10px] block mt-1">Upload</span>
+                                    </div>
+                                )}
+                            </div>
+                            
+                            {newCustomer.image && (
+                                <button 
+                                    onClick={handleRemoveCustomerImage}
+                                    className="absolute -top-1 -right-1 bg-red-100 text-red-600 p-1.5 rounded-full hover:bg-red-200 border border-white shadow-sm"
+                                    title="Remove Photo"
+                                >
+                                    <Trash2 size={14} />
+                                </button>
+                            )}
+
+                            <div className="absolute inset-0 bg-black/40 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity">
+                                <Upload className="text-white" size={20} />
+                            </div>
+
+                            <input 
+                                type="file" 
+                                ref={customerFileInputRef} 
+                                className="hidden" 
+                                accept="image/*" 
+                                onChange={handleCustomerImageUpload}
+                            />
+                        </div>
+                    </div>
+
                     <div>
                         <label className="block text-sm font-medium text-slate-700 mb-1">Customer Name *</label>
                         <input 
@@ -352,11 +487,11 @@ const CustomerList: React.FC<CustomerListProps> = ({ customers, setCustomers, ti
                         Cancel
                     </button>
                     <button 
-                        onClick={handleAddCustomer}
+                        onClick={handleSaveCustomer}
                         disabled={!newCustomer.name || !newCustomer.email}
                         className="px-6 py-2 bg-[#FFB600] text-slate-900 font-bold rounded-lg hover:bg-amber-500 transition-colors shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
                     >
-                        Create Customer
+                        {editingId ? 'Save Changes' : 'Create Customer'}
                     </button>
                 </div>
             </div>
@@ -369,11 +504,24 @@ const CustomerList: React.FC<CustomerListProps> = ({ customers, setCustomers, ti
             <div className="bg-white rounded-2xl w-full max-w-5xl shadow-2xl overflow-hidden flex flex-col h-[85vh]">
                 <div className="p-6 border-b border-slate-100 flex justify-between items-start bg-slate-50">
                     <div className="flex items-start gap-4">
-                        <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center text-blue-600 font-bold text-2xl">
-                            {selectedCustomer.name.charAt(0)}
+                        <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center text-blue-600 font-bold text-2xl overflow-hidden border border-blue-200 flex-shrink-0">
+                            {selectedCustomer.image ? (
+                                <img src={selectedCustomer.image} alt={selectedCustomer.name} className="w-full h-full object-cover" />
+                            ) : (
+                                selectedCustomer.name.charAt(0)
+                            )}
                         </div>
                         <div>
-                            <h2 className="text-2xl font-bold text-slate-800">{selectedCustomer.name}</h2>
+                            <h2 className="text-2xl font-bold text-slate-800 flex items-center gap-2">
+                                {selectedCustomer.name}
+                                <button 
+                                    onClick={() => handleOpenEdit(selectedCustomer)}
+                                    className="p-1 text-slate-400 hover:text-[#FFB600] transition-colors"
+                                    title="Edit Profile"
+                                >
+                                    <Edit size={16} />
+                                </button>
+                            </h2>
                             <p className="text-slate-500 flex items-center gap-2 text-sm mt-1">
                                 <MapPin size={14} /> {selectedCustomer.address}
                             </p>
@@ -452,6 +600,65 @@ const CustomerList: React.FC<CustomerListProps> = ({ customers, setCustomers, ti
                             <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
                                 <h4 className="text-sm font-bold text-slate-800 mb-3">General Information</h4>
                                 <p className="text-slate-600 text-sm leading-relaxed">{selectedCustomer.notes || "No general notes available."}</p>
+                            </div>
+
+                            {/* Recent Activity & Comments Section in Overview */}
+                            <div>
+                                <h4 className="text-sm font-bold text-slate-800 mb-4 flex items-center gap-2">
+                                    <MessageSquare size={16} className="text-slate-400" />
+                                    Recent Activity & Comments
+                                </h4>
+                                <div className="space-y-4">
+                                    {selectedCustomer.noteHistory && selectedCustomer.noteHistory.length > 0 ? (
+                                        selectedCustomer.noteHistory.sort((a,b) => new Date(b.date).getTime() - new Date(a.date).getTime()).map((note) => {
+                                            // Resolve Author details from Staff list
+                                            const noteAuthor = staff.find(s => s.id === note.authorId) || staff.find(s => s.name === note.author);
+                                            
+                                            return (
+                                                <div key={note.id} className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
+                                                    <div className="flex justify-between items-start mb-2">
+                                                        <div className="flex items-center gap-3">
+                                                            <div className="w-8 h-8 rounded-full flex items-center justify-center bg-slate-100 text-slate-500 overflow-hidden border border-slate-200">
+                                                                {noteAuthor?.image ? (
+                                                                    <img src={noteAuthor.image} alt={note.author} className="w-full h-full object-cover" />
+                                                                ) : (
+                                                                    <span className="text-xs font-bold">{note.author.charAt(0)}</span>
+                                                                )}
+                                                            </div>
+                                                            <div>
+                                                                <div className="flex items-center gap-2">
+                                                                    <span className="text-sm font-bold text-slate-800">{note.author}</span>
+                                                                    {noteAuthor && (
+                                                                        <span className="text-[10px] px-1.5 py-0.5 rounded bg-slate-100 text-slate-600 border border-slate-200 uppercase font-medium">
+                                                                            {noteAuthor.role}
+                                                                        </span>
+                                                                    )}
+                                                                </div>
+                                                                <span className="text-xs text-slate-400 block">
+                                                                    {new Date(note.date).toLocaleString()}
+                                                                </span>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <div className="pl-11">
+                                                        <p className="text-sm text-slate-600 leading-relaxed whitespace-pre-wrap">
+                                                            {note.content}
+                                                        </p>
+                                                        {note.attachment && (
+                                                            <div className="mt-3">
+                                                                <img src={note.attachment} alt="Attachment" className="max-w-full h-auto max-h-60 rounded-lg border border-slate-200 cursor-pointer hover:opacity-95" onClick={() => window.open(note.attachment)} />
+                                                            </div>
+                                                        )}
+                                                    </div>
+                                                </div>
+                                            );
+                                        })
+                                    ) : (
+                                        <div className="text-center py-6 bg-white rounded-xl border border-slate-200 text-slate-400 text-sm">
+                                            No recent comments or activity.
+                                        </div>
+                                    )}
+                                </div>
                             </div>
                         </div>
                     )}
@@ -558,20 +765,49 @@ const CustomerList: React.FC<CustomerListProps> = ({ customers, setCustomers, ti
                             {/* Input Section */}
                             <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm mb-2">
                                 <label className="block text-sm font-bold text-slate-700 mb-2">Add New Note</label>
+                                
+                                {noteAttachment && (
+                                    <div className="mb-3 relative inline-block">
+                                        <img src={noteAttachment} alt="Preview" className="h-20 w-auto rounded-lg border border-slate-200 object-cover" />
+                                        <button 
+                                            onClick={() => { setNoteAttachment(null); if(noteFileInputRef.current) noteFileInputRef.current.value=''; }}
+                                            className="absolute -top-2 -right-2 bg-red-100 text-red-600 p-1 rounded-full hover:bg-red-200 border border-white shadow-sm"
+                                        >
+                                            <X size={12} />
+                                        </button>
+                                    </div>
+                                )}
+
                                 <div className="relative">
                                     <textarea 
-                                        className="w-full border border-slate-300 rounded-lg p-3 pr-12 text-sm focus:ring-2 focus:ring-[#FFB600] focus:border-[#FFB600] outline-none resize-none h-24"
+                                        className="w-full border border-slate-300 rounded-lg p-3 pr-24 text-sm focus:ring-2 focus:ring-[#FFB600] focus:border-[#FFB600] outline-none resize-none h-24"
                                         placeholder="Type your comment or note here..."
                                         value={newNoteContent}
                                         onChange={(e) => setNewNoteContent(e.target.value)}
                                     />
-                                    <button 
-                                        onClick={handleAddNote}
-                                        disabled={!newNoteContent.trim()}
-                                        className="absolute bottom-3 right-3 p-2 bg-[#FFB600] text-slate-900 rounded-full hover:bg-amber-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-                                    >
-                                        <Send size={16} />
-                                    </button>
+                                    <div className="absolute bottom-3 right-3 flex items-center gap-2">
+                                        <button
+                                            onClick={() => noteFileInputRef.current?.click()}
+                                            className="p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-full transition-colors"
+                                            title="Attach Image"
+                                        >
+                                            <Paperclip size={18} />
+                                        </button>
+                                        <input 
+                                            type="file" 
+                                            ref={noteFileInputRef} 
+                                            className="hidden" 
+                                            accept="image/*" 
+                                            onChange={handleNoteFileSelect}
+                                        />
+                                        <button 
+                                            onClick={handleAddNote}
+                                            disabled={!newNoteContent.trim() && !noteAttachment}
+                                            className="p-2 bg-[#FFB600] text-slate-900 rounded-full hover:bg-amber-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors shadow-sm"
+                                        >
+                                            <Send size={16} />
+                                        </button>
+                                    </div>
                                 </div>
                             </div>
 
@@ -582,24 +818,49 @@ const CustomerList: React.FC<CustomerListProps> = ({ customers, setCustomers, ti
                                     <h4 className="text-sm font-bold text-slate-600">Comment History</h4>
                                 </div>
                                 {selectedCustomer.noteHistory && selectedCustomer.noteHistory.length > 0 ? (
-                                    selectedCustomer.noteHistory.map((note) => (
-                                        <div key={note.id} className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
-                                            <div className="flex justify-between items-start mb-2">
-                                                <div className="flex items-center gap-2">
-                                                    <div className="w-6 h-6 bg-slate-100 rounded-full flex items-center justify-center text-slate-500 text-xs font-bold">
-                                                        {note.author.charAt(0)}
+                                    selectedCustomer.noteHistory.sort((a,b) => new Date(b.date).getTime() - new Date(a.date).getTime()).map((note) => {
+                                        // Resolve Author details from Staff list
+                                        const noteAuthor = staff.find(s => s.id === note.authorId) || staff.find(s => s.name === note.author);
+                                        
+                                        return (
+                                            <div key={note.id} className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
+                                                <div className="flex justify-between items-start mb-2">
+                                                    <div className="flex items-center gap-3">
+                                                        <div className="w-8 h-8 rounded-full flex items-center justify-center bg-slate-100 text-slate-500 overflow-hidden border border-slate-200">
+                                                            {noteAuthor?.image ? (
+                                                                <img src={noteAuthor.image} alt={note.author} className="w-full h-full object-cover" />
+                                                            ) : (
+                                                                <span className="text-xs font-bold">{note.author.charAt(0)}</span>
+                                                            )}
+                                                        </div>
+                                                        <div>
+                                                            <div className="flex items-center gap-2">
+                                                                <span className="text-sm font-bold text-slate-800">{note.author}</span>
+                                                                {noteAuthor && (
+                                                                    <span className="text-[10px] px-1.5 py-0.5 rounded bg-slate-100 text-slate-600 border border-slate-200 uppercase font-medium">
+                                                                        {noteAuthor.role}
+                                                                    </span>
+                                                                )}
+                                                            </div>
+                                                            <span className="text-xs text-slate-400 block">
+                                                                {new Date(note.date).toLocaleString()}
+                                                            </span>
+                                                        </div>
                                                     </div>
-                                                    <span className="text-sm font-bold text-slate-800">{note.author}</span>
                                                 </div>
-                                                <span className="text-xs text-slate-400">
-                                                    {new Date(note.date).toLocaleString()}
-                                                </span>
+                                                <div className="pl-11">
+                                                    <p className="text-sm text-slate-600 leading-relaxed whitespace-pre-wrap">
+                                                        {note.content}
+                                                    </p>
+                                                    {note.attachment && (
+                                                        <div className="mt-3">
+                                                            <img src={note.attachment} alt="Attachment" className="max-w-full h-auto max-h-60 rounded-lg border border-slate-200 cursor-pointer hover:opacity-95" onClick={() => window.open(note.attachment)} />
+                                                        </div>
+                                                    )}
+                                                </div>
                                             </div>
-                                            <p className="text-sm text-slate-600 leading-relaxed whitespace-pre-wrap pl-8">
-                                                {note.content}
-                                            </p>
-                                        </div>
-                                    ))
+                                        );
+                                    })
                                 ) : (
                                     <div className="text-center py-10 bg-white rounded-xl border border-slate-200 text-slate-400">
                                         <MessageSquare size={32} className="mx-auto mb-2 opacity-20" />

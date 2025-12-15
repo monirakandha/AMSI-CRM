@@ -1,16 +1,18 @@
 import React, { useState } from 'react';
 import { Invoice, InvoiceStatus, Customer, Product, InvoiceItem } from '../types';
-import { Search, FileText, Plus, Calendar, User, Trash2, DollarSign, Download, Send, Eye, Edit, X, CheckCircle, AlertCircle, XCircle } from 'lucide-react';
+import { Search, FileText, Plus, Calendar, User, Trash2, DollarSign, Download, Send, Eye, Edit, X, CheckCircle, AlertCircle, XCircle, UserPlus, Save } from 'lucide-react';
 
 interface InvoiceListProps {
   invoices: Invoice[];
   customers: Customer[];
   products: Product[];
   setInvoices: React.Dispatch<React.SetStateAction<Invoice[]>>;
+  setCustomers: React.Dispatch<React.SetStateAction<Customer[]>>;
 }
 
-const InvoiceList: React.FC<InvoiceListProps> = ({ invoices, customers, products, setInvoices }) => {
+const InvoiceList: React.FC<InvoiceListProps> = ({ invoices, customers, products, setInvoices, setCustomers }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isAddCustomerModalOpen, setIsAddCustomerModalOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [viewInvoice, setViewInvoice] = useState<Invoice | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
@@ -25,6 +27,14 @@ const InvoiceList: React.FC<InvoiceListProps> = ({ invoices, customers, products
     items: [],
     dueDate: '',
     date: new Date().toISOString().split('T')[0]
+  });
+
+  // Quick Add Customer State
+  const [newCustomerForm, setNewCustomerForm] = useState({
+      name: '',
+      email: '',
+      phone: '',
+      address: ''
   });
 
   const getStatusColor = (status: InvoiceStatus) => {
@@ -141,6 +151,29 @@ const InvoiceList: React.FC<InvoiceListProps> = ({ invoices, customers, products
     setIsModalOpen(false);
     setEditingId(null);
     setNewInvoice({ customerId: '', items: [], dueDate: '', date: '' });
+  };
+
+  const handleSaveNewCustomer = (e: React.MouseEvent) => {
+      e.preventDefault();
+      if (!newCustomerForm.name) return;
+
+      const newId = `CUST-${Math.floor(Math.random() * 10000)}`;
+      const newCustomer: Customer = {
+          id: newId,
+          name: newCustomerForm.name,
+          email: newCustomerForm.email,
+          phone: newCustomerForm.phone,
+          address: newCustomerForm.address,
+          contractValue: 0,
+          systems: [],
+          notes: '',
+          noteHistory: []
+      };
+
+      setCustomers(prev => [...prev, newCustomer]);
+      setNewInvoice(prev => ({ ...prev, customerId: newId })); // Auto-select new customer
+      setIsAddCustomerModalOpen(false);
+      setNewCustomerForm({ name: '', email: '', phone: '', address: '' });
   };
 
   const handleMarkAsPaid = (e: React.MouseEvent, invoice: Invoice) => {
@@ -377,58 +410,51 @@ const InvoiceList: React.FC<InvoiceListProps> = ({ invoices, customers, products
                     </span>
                   </td>
                   <td className="px-6 py-4 text-center">
-                    <div className="flex items-center justify-center gap-2">
+                    <div className="flex items-center justify-center gap-2 flex-wrap">
                         <button 
                             type="button"
                             onClick={() => setViewInvoice(invoice)}
-                            className="text-slate-400 hover:text-blue-600 p-2 rounded-md hover:bg-blue-50 transition-colors" 
+                            className="flex items-center gap-1 bg-slate-100 hover:bg-blue-50 text-slate-600 hover:text-blue-600 px-3 py-1.5 rounded text-xs font-medium transition-colors border border-slate-200" 
                             title="View Details"
                         >
-                            <Eye size={16} />
+                            <Eye size={14} /> View
                         </button>
                         {invoice.status !== InvoiceStatus.PAID && (
                             <button 
                                 type="button"
                                 onClick={() => handleEditInvoice(invoice)}
-                                className="text-slate-400 hover:text-amber-600 p-2 rounded-md hover:bg-amber-50 transition-colors" 
+                                className="flex items-center gap-1 bg-slate-100 hover:bg-amber-50 text-slate-600 hover:text-amber-600 px-3 py-1.5 rounded text-xs font-medium transition-colors border border-slate-200" 
                                 title="Edit Invoice"
                             >
-                                <Edit size={16} />
+                                <Edit size={14} /> Edit
                             </button>
                         )}
                         <button 
                             type="button"
                             onClick={() => handleDownloadPDF(invoice)}
-                            className="text-slate-400 hover:text-blue-600 p-2 rounded-md hover:bg-blue-50 transition-colors" 
+                            className="flex items-center gap-1 bg-slate-100 hover:bg-slate-200 text-slate-600 px-3 py-1.5 rounded text-xs font-medium transition-colors border border-slate-200" 
                             title="Download PDF"
                         >
-                            <Download size={16} />
+                            <Download size={14} /> Download
                         </button>
-                        <button 
-                            type="button"
-                            onClick={() => handleSendEmail(invoice)}
-                            className="text-slate-400 hover:text-blue-600 p-2 rounded-md hover:bg-blue-50 transition-colors" 
-                            title="Send Email"
-                        >
-                            <Send size={16} />
-                        </button>
+                        
                         {invoice.status !== InvoiceStatus.PAID ? (
                              <button 
                                 type="button"
                                 onClick={(e) => handleMarkAsPaid(e, invoice)}
-                                className="text-slate-400 hover:text-green-600 p-2 rounded-md hover:bg-green-50 transition-colors" 
+                                className="flex items-center gap-1 bg-green-50 hover:bg-green-100 text-green-700 px-3 py-1.5 rounded text-xs font-medium transition-colors border border-green-200" 
                                 title="Mark as Paid"
                             >
-                                <CheckCircle size={16} />
+                                <CheckCircle size={14} /> Mark as Paid
                             </button>
                         ) : (
                              <button 
                                 type="button"
                                 onClick={(e) => handleMarkAsUnpaid(e, invoice)}
-                                className="text-slate-400 hover:text-red-600 p-2 rounded-md hover:bg-red-50 transition-colors" 
+                                className="flex items-center gap-1 bg-red-50 hover:bg-red-100 text-red-700 px-3 py-1.5 rounded text-xs font-medium transition-colors border border-red-200" 
                                 title="Mark as Unpaid"
                             >
-                                <XCircle size={16} />
+                                <XCircle size={14} /> Mark Unpaid
                             </button>
                         )}
                     </div>
@@ -559,7 +585,7 @@ const InvoiceList: React.FC<InvoiceListProps> = ({ invoices, customers, products
                             onClick={() => handleEditInvoice(viewInvoice)}
                             className="px-4 py-2 bg-white border border-slate-300 text-slate-700 font-bold rounded-lg hover:bg-slate-100 transition-colors shadow-sm flex items-center gap-2"
                         >
-                            <Edit size={16} /> Edit Invoice
+                            <Edit size={16} /> Edit
                         </button>
                     )}
                     <button 
@@ -588,13 +614,13 @@ const InvoiceList: React.FC<InvoiceListProps> = ({ invoices, customers, products
                 </div>
                 
                 <div className="p-8 overflow-y-auto flex-1 bg-slate-50">
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                    <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8 items-end">
                         <div>
                             <label className="block text-sm font-medium text-slate-700 mb-1">Customer</label>
                             <div className="relative">
                                 <User className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={16} />
                                 <select 
-                                    className="w-full pl-10 border border-slate-300 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-[#FFB600] focus:border-[#FFB600] outline-none bg-white"
+                                    className="w-full pl-10 border border-slate-300 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-[#FFB600] focus:border-[#FFB600] outline-none bg-white h-[42px]"
                                     onChange={(e) => setNewInvoice(prev => ({...prev, customerId: e.target.value}))}
                                     value={newInvoice.customerId}
                                 >
@@ -604,12 +630,21 @@ const InvoiceList: React.FC<InvoiceListProps> = ({ invoices, customers, products
                             </div>
                         </div>
                         <div>
+                             <button 
+                                onClick={(e) => { e.preventDefault(); setIsAddCustomerModalOpen(true); }}
+                                className="w-full bg-[#FFB600] hover:bg-amber-500 text-slate-900 px-3 py-2.5 rounded-lg font-bold transition-colors shadow-sm flex items-center justify-center gap-2 whitespace-nowrap h-[42px]"
+                                title="Add New Customer"
+                            >
+                                <UserPlus size={18} /> Add Customer
+                            </button>
+                        </div>
+                        <div>
                             <label className="block text-sm font-medium text-slate-700 mb-1">Issue Date</label>
                             <div className="relative">
                                 <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={16} />
                                 <input 
                                     type="date" 
-                                    className="w-full pl-10 border border-slate-300 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-[#FFB600] focus:border-[#FFB600] outline-none"
+                                    className="w-full pl-10 border border-slate-300 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-[#FFB600] focus:border-[#FFB600] outline-none h-[42px]"
                                     value={newInvoice.date}
                                     onChange={(e) => setNewInvoice(prev => ({...prev, date: e.target.value}))}
                                 />
@@ -621,7 +656,7 @@ const InvoiceList: React.FC<InvoiceListProps> = ({ invoices, customers, products
                                 <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={16} />
                                 <input 
                                     type="date" 
-                                    className="w-full pl-10 border border-slate-300 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-[#FFB600] focus:border-[#FFB600] outline-none"
+                                    className="w-full pl-10 border border-slate-300 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-[#FFB600] focus:border-[#FFB600] outline-none h-[42px]"
                                     value={newInvoice.dueDate}
                                     onChange={(e) => setNewInvoice(prev => ({...prev, dueDate: e.target.value}))}
                                 />
@@ -735,6 +770,81 @@ const InvoiceList: React.FC<InvoiceListProps> = ({ invoices, customers, products
                 </div>
             </div>
         </div>
+      )}
+
+      {/* Add New Customer Modal (Nested) */}
+      {isAddCustomerModalOpen && (
+          <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[60] flex items-center justify-center p-4">
+              <div className="bg-white rounded-2xl w-full max-w-lg shadow-2xl overflow-hidden flex flex-col">
+                  <div className="p-6 border-b border-slate-100 flex justify-between items-center bg-slate-50">
+                      <h3 className="text-xl font-bold text-slate-800 flex items-center gap-2">
+                          <UserPlus className="text-[#FFB600]" size={20} /> Add New Customer
+                      </h3>
+                      <button onClick={() => setIsAddCustomerModalOpen(false)} className="text-slate-400 hover:text-slate-600">
+                          <X size={20} />
+                      </button>
+                  </div>
+                  <div className="p-6 space-y-4">
+                      <div>
+                          <label className="block text-sm font-medium text-slate-700 mb-1">Customer Name *</label>
+                          <input 
+                              type="text" 
+                              className="w-full border border-slate-300 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-[#FFB600] focus:border-[#FFB600] outline-none"
+                              placeholder="e.g. Acme Corp"
+                              value={newCustomerForm.name}
+                              onChange={(e) => setNewCustomerForm(prev => ({...prev, name: e.target.value}))}
+                          />
+                      </div>
+                      <div className="grid grid-cols-2 gap-4">
+                          <div>
+                              <label className="block text-sm font-medium text-slate-700 mb-1">Email</label>
+                              <input 
+                                  type="email" 
+                                  className="w-full border border-slate-300 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-[#FFB600] focus:border-[#FFB600] outline-none"
+                                  placeholder="contact@example.com"
+                                  value={newCustomerForm.email}
+                                  onChange={(e) => setNewCustomerForm(prev => ({...prev, email: e.target.value}))}
+                              />
+                          </div>
+                          <div>
+                              <label className="block text-sm font-medium text-slate-700 mb-1">Phone</label>
+                              <input 
+                                  type="tel" 
+                                  className="w-full border border-slate-300 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-[#FFB600] focus:border-[#FFB600] outline-none"
+                                  placeholder="(555) 123-4567"
+                                  value={newCustomerForm.phone}
+                                  onChange={(e) => setNewCustomerForm(prev => ({...prev, phone: e.target.value}))}
+                              />
+                          </div>
+                      </div>
+                      <div>
+                          <label className="block text-sm font-medium text-slate-700 mb-1">Address</label>
+                          <input 
+                              type="text" 
+                              className="w-full border border-slate-300 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-[#FFB600] focus:border-[#FFB600] outline-none"
+                              placeholder="123 Main St, City, State"
+                              value={newCustomerForm.address}
+                              onChange={(e) => setNewCustomerForm(prev => ({...prev, address: e.target.value}))}
+                          />
+                      </div>
+                  </div>
+                  <div className="p-4 border-t border-slate-200 bg-slate-50 flex justify-end gap-3">
+                      <button 
+                          onClick={() => setIsAddCustomerModalOpen(false)}
+                          className="px-4 py-2 text-slate-600 font-medium hover:bg-slate-100 rounded-lg transition-colors"
+                      >
+                          Cancel
+                      </button>
+                      <button 
+                          onClick={handleSaveNewCustomer}
+                          disabled={!newCustomerForm.name}
+                          className="px-6 py-2 bg-[#FFB600] text-slate-900 font-bold rounded-lg hover:bg-amber-500 transition-colors shadow-sm disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                      >
+                          <Save size={18} /> Add Customer
+                      </button>
+                  </div>
+              </div>
+          </div>
       )}
     </div>
   );

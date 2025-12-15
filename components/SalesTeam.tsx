@@ -1,17 +1,28 @@
 import React, { useState } from 'react';
-import { Staff, Lead, LeadStatus, Role, LeadHistoryEntry } from '../types';
-import { Briefcase, User, Phone, Mail, Plus, MapPin, HardHat, Send, X, Clock, FileText, CheckCircle, XCircle, ArrowRight, MessageSquare } from 'lucide-react';
+import { Staff, Lead, LeadStatus, Role, LeadHistoryEntry, Customer } from '../types';
+import { Briefcase, User, Phone, Mail, Plus, MapPin, HardHat, Send, X, Clock, FileText, CheckCircle, XCircle, ArrowRight, MessageSquare, UserPlus, Save } from 'lucide-react';
 
 interface SalesTeamProps {
   staff: Staff[];
   leads: Lead[];
   setLeads: React.Dispatch<React.SetStateAction<Lead[]>>;
+  customers: Customer[];
+  setCustomers: React.Dispatch<React.SetStateAction<Customer[]>>;
 }
 
-const SalesTeam: React.FC<SalesTeamProps> = ({ staff, leads, setLeads }) => {
+const SalesTeam: React.FC<SalesTeamProps> = ({ staff, leads, setLeads, customers, setCustomers }) => {
   const [activeTab, setActiveTab] = useState<'team' | 'leads'>('leads');
   const [isLeadModalOpen, setIsLeadModalOpen] = useState(false);
   const [selectedLead, setSelectedLead] = useState<Lead | null>(null);
+  
+  // Add Customer Modal State
+  const [isAddCustomerModalOpen, setIsAddCustomerModalOpen] = useState(false);
+  const [newCustomerForm, setNewCustomerForm] = useState({
+      name: '',
+      email: '',
+      phone: '',
+      address: ''
+  });
   
   const salesTeam = staff.filter(s => s.role === Role.SALES);
   const engineers = staff.filter(s => s.role === Role.ENGINEER);
@@ -70,6 +81,35 @@ const SalesTeam: React.FC<SalesTeamProps> = ({ staff, leads, setLeads }) => {
     if (selectedLead && selectedLead.id === id) {
         setSelectedLead(prev => prev ? ({...prev, status, assignedEngineerId: engineerId || prev.assignedEngineerId}) : null);
     }
+  };
+
+  const handleSaveNewCustomer = (e: React.MouseEvent) => {
+      e.preventDefault();
+      if (!newCustomerForm.name) return;
+
+      const newCustomer: Customer = {
+          id: `CUST-${Math.floor(Math.random() * 10000)}`,
+          name: newCustomerForm.name,
+          email: newCustomerForm.email,
+          phone: newCustomerForm.phone,
+          address: newCustomerForm.address,
+          contractValue: 0,
+          systems: [],
+          notes: '',
+          noteHistory: []
+      };
+
+      setCustomers(prev => [...prev, newCustomer]);
+      
+      // Auto-fill Lead Form
+      setNewLead(prev => ({
+          ...prev, 
+          customerName: newCustomer.name,
+          // Optionally set contact name if empty, though prompt only asked for Customer Name
+      }));
+
+      setIsAddCustomerModalOpen(false);
+      setNewCustomerForm({ name: '', email: '', phone: '', address: '' });
   };
 
   return (
@@ -245,8 +285,20 @@ const SalesTeam: React.FC<SalesTeamProps> = ({ staff, leads, setLeads }) => {
                 <div className="p-6 space-y-4">
                     <div>
                         <label className="block text-sm font-medium text-slate-700 mb-1">Customer Name</label>
-                        <input type="text" className="w-full p-2 border border-slate-300 rounded-lg text-sm" 
-                            onChange={e => setNewLead({...newLead, customerName: e.target.value})} />
+                        <div className="flex gap-2">
+                            <input 
+                                type="text" 
+                                className="flex-1 p-2 border border-slate-300 rounded-lg text-sm" 
+                                value={newLead.customerName || ''}
+                                onChange={e => setNewLead({...newLead, customerName: e.target.value})} 
+                            />
+                            <button 
+                                onClick={(e) => { e.preventDefault(); setIsAddCustomerModalOpen(true); }}
+                                className="bg-[#FFB600] hover:bg-amber-500 text-slate-900 px-3 py-2 rounded-lg font-bold transition-colors shadow-sm flex items-center gap-1 text-xs whitespace-nowrap"
+                            >
+                                <UserPlus size={14} /> Add Customer
+                            </button>
+                        </div>
                     </div>
                     <div className="grid grid-cols-2 gap-4">
                         <div>
@@ -280,6 +332,81 @@ const SalesTeam: React.FC<SalesTeamProps> = ({ staff, leads, setLeads }) => {
                     <button onClick={handleCreateLead} className="px-4 py-2 bg-[#FFB600] text-slate-900 font-bold rounded-lg hover:bg-amber-500">Add Lead</button>
                 </div>
             </div>
+          </div>
+      )}
+
+      {/* Add New Customer Modal (Nested) */}
+      {isAddCustomerModalOpen && (
+          <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[60] flex items-center justify-center p-4">
+              <div className="bg-white rounded-2xl w-full max-w-lg shadow-2xl overflow-hidden flex flex-col">
+                  <div className="p-6 border-b border-slate-100 flex justify-between items-center bg-slate-50">
+                      <h3 className="text-xl font-bold text-slate-800 flex items-center gap-2">
+                          <UserPlus className="text-[#FFB600]" size={20} /> Add New Customer
+                      </h3>
+                      <button onClick={() => setIsAddCustomerModalOpen(false)} className="text-slate-400 hover:text-slate-600">
+                          <X size={20} />
+                      </button>
+                  </div>
+                  <div className="p-6 space-y-4">
+                      <div>
+                          <label className="block text-sm font-medium text-slate-700 mb-1">Customer Name *</label>
+                          <input 
+                              type="text" 
+                              className="w-full border border-slate-300 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-[#FFB600] focus:border-[#FFB600] outline-none"
+                              placeholder="e.g. Acme Corp"
+                              value={newCustomerForm.name}
+                              onChange={(e) => setNewCustomerForm(prev => ({...prev, name: e.target.value}))}
+                          />
+                      </div>
+                      <div className="grid grid-cols-2 gap-4">
+                          <div>
+                              <label className="block text-sm font-medium text-slate-700 mb-1">Email</label>
+                              <input 
+                                  type="email" 
+                                  className="w-full border border-slate-300 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-[#FFB600] focus:border-[#FFB600] outline-none"
+                                  placeholder="contact@example.com"
+                                  value={newCustomerForm.email}
+                                  onChange={(e) => setNewCustomerForm(prev => ({...prev, email: e.target.value}))}
+                              />
+                          </div>
+                          <div>
+                              <label className="block text-sm font-medium text-slate-700 mb-1">Phone</label>
+                              <input 
+                                  type="tel" 
+                                  className="w-full border border-slate-300 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-[#FFB600] focus:border-[#FFB600] outline-none"
+                                  placeholder="(555) 123-4567"
+                                  value={newCustomerForm.phone}
+                                  onChange={(e) => setNewCustomerForm(prev => ({...prev, phone: e.target.value}))}
+                              />
+                          </div>
+                      </div>
+                      <div>
+                          <label className="block text-sm font-medium text-slate-700 mb-1">Address</label>
+                          <input 
+                              type="text" 
+                              className="w-full border border-slate-300 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-[#FFB600] focus:border-[#FFB600] outline-none"
+                              placeholder="123 Main St, City, State"
+                              value={newCustomerForm.address}
+                              onChange={(e) => setNewCustomerForm(prev => ({...prev, address: e.target.value}))}
+                          />
+                      </div>
+                  </div>
+                  <div className="p-4 border-t border-slate-200 bg-slate-50 flex justify-end gap-3">
+                      <button 
+                          onClick={() => setIsAddCustomerModalOpen(false)}
+                          className="px-4 py-2 text-slate-600 font-medium hover:bg-slate-100 rounded-lg transition-colors"
+                      >
+                          Cancel
+                      </button>
+                      <button 
+                          onClick={handleSaveNewCustomer}
+                          disabled={!newCustomerForm.name}
+                          className="px-6 py-2 bg-[#FFB600] text-slate-900 font-bold rounded-lg hover:bg-amber-500 transition-colors shadow-sm disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                      >
+                          <Save size={18} /> Add Customer
+                      </button>
+                  </div>
+              </div>
           </div>
       )}
 
